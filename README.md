@@ -1,5 +1,6 @@
 # regedit
-Read, Write and do all sorts of other funky stuff to the windows registry from node.js using windows script host.
+Read, Write, List and do all sorts of funky stuff to the windows registry using node.js and windows script host.
+
 No pesky native code :-)
 
 ## Install
