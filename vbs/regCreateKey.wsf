@@ -5,7 +5,7 @@
 
 		' bail if args not here
 		If args.Count = 0 Then
-			Write "usage: cscript regCreateKey.wsf regpath1 [regpath2] ... [regpathN]"
+			WriteLineErr "usage: cscript regCreateKey.wsf regpath1 [regpath2] ... [regpathN]"
 			WScript.Quit 25121
 		End If
 
@@ -14,7 +14,7 @@
 			ParseHiveAndSubKey args(v), constHive, strSubKey
 
 			if IsNull(constHive) Then
-				Write "unsupported hive " & args(v)
+				WriteLineErr "unsupported hive " & args(v)
 				WScript.Quit 25122       
 			End If
 

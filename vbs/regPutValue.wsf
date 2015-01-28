@@ -7,12 +7,12 @@
 	
 		' bail if args not here
 		If args.Count = 0 Then
-			WriteLine usage
+			WriteLineErr usage
 			WScript.Quit 25121
 		End If
 
 		If Not args.Count Mod 4 = 0 Then
-			WriteLine usage
+			WriteLineErr usage
 			WScript.Quit 25121
 		End If
 
@@ -20,7 +20,7 @@
 			ParseHiveAndSubKey args(v), constHive, strSubKey
 
 			if IsNull(constHive) Then
-				Write "unsupported hive " & args(v)
+				WriteLineErr "unsupported hive " & args(v)
 				WScript.Quit 25122       
 			End If
 
@@ -30,7 +30,8 @@
 	
 			Result = PutValue(constHive, strSubKey, strValueName, strValue, strType)
 
-			If Not Result = 0 Then				
+			If Not Result = 0 Then
+				WriteLineErr "error while putting value"			
 				WScript.Quit Result
 			End If	
 		Next

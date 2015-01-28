@@ -96,5 +96,17 @@ Supported value types are:
 - REG_MULTI_SZ: an array of strings
 - REG_BINARY: an array of numbers (representing bytes)
 
+## Develop
+
+### Run tests
+```
+    mocha -R spec
+```
+
+### Enable debug output
+```
+    set DEBUG=regedit
+```
+
 ## TODO
 deleteValue()

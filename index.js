@@ -4,48 +4,38 @@ var path = require('path')
 var debug = require('debug')('regedit')
 var errors = require('./errors.js')
 
-module.exports.list = function (registryPaths, callback) {
-	executeCommand('regList.wsf', registryPaths, callback)
+module.exports.list = function (keys, callback) {
+	executeCommand(prepareCommand('regList.wsf', keys), callback)
 }
 
 module.exports.createKey = function (keys, callback) {
-	executeCommand('regCreateKey.wsf', keys, callback)
+	executeCommand(prepareCommand('regCreateKey.wsf', keys), callback)
 }
 
 module.exports.deleteKey = function (keys, callback) {
-	executeCommand('regDeleteKey.wsf', keys, callback)
+	executeCommand(prepareCommand('regDeleteKey.wsf', keys), callback)
 }
 
 module.exports.putValue = function(map, callback) {
 	
-	var keys = []
+	var cmd = 'regPutValue.wsf '
 
 	for (var key in map) {		
 		var values = map[key]
 		for (var valueName in values) {
 			var entry = values[valueName]
-			var line = key + ' ' + valueName + ' ' 
-						+ renderValueByType(entry.value, entry.type) + ' ' 
+			var line = wrapDoubleQuotes(key) + ' ' + wrapDoubleQuotes(valueName) + ' ' 
+						+ wrapDoubleQuotes(renderValueByType(entry.value, entry.type)) + ' ' 
 						+ entry.type
 
-			keys.push(line)
+			cmd += ' ' + line
 		}
 	}
 
-	executeCommand('regPutValue.wsf', keys, callback)
+	executeCommand(cmd, callback)
 }
 
-function executeCommand(cmd, keys, callback) {
-
-	cmd += ' '
-
-	if (typeof(keys) === 'string') {
-		cmd += keys
-	} else if (util.isArray(keys)) {
-		cmd += keys.join(' ')
-	} else {
-		throw new Error('missing or invalid keys, try a string or an array of strings')
-	}
+function executeCommand(cmd, callback) {
 
 	if (typeof callback !== 'function') {
 		throw new Error('missing callback')
@@ -62,7 +52,14 @@ function execChildProcess(cmd, callback) {
 	child.exec(cmd, function (err, stdout, stderr) {	
 
 		if (err) {
-			console.log(stdout)
+			if (stdout) {
+				console.log(stdout)
+			}
+
+			if (stderr) {
+				console.error(stderr)
+			}
+
 			if (err.code in errors) {
 				return callback(errors[err.code])
 			} else {
@@ -70,6 +67,7 @@ function execChildProcess(cmd, callback) {
 			}
 		}
 
+		// in case we have stuff in stderr but no real error
 		if (stderr) return callback(new Error(stderr))
 	
 		var result
@@ -102,4 +100,32 @@ function renderValueByType(value, type) {
 		default:
 			return value
 	}
+}
+
+function prepareCommand(cmd, args) {
+	if (typeof args === 'string') {
+		return cmd += ' ' + wrapDoubleQuotes(args)
+	} else if (util.isArray(args)) {
+		return cmd += wrapItemsWithDoubleQuotes(args)
+	} else {
+		return cmd
+	}
+}
+
+function wrapItemsWithDoubleQuotes(arr) {
+	var result = ''
+
+	for (var i = 0; i < arr.length; i++) {
+		result += ' ' + wrapDoubleQuotes(arr[i])		
+	}
+
+	return result
+}
+
+function wrapDoubleQuotes(item) {
+	if (item[0] !== '"' && item[item.length - 1] !== '"') {
+		return '"' + item + '"'
+	}
+
+	return item
 }

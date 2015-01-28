@@ -40,6 +40,19 @@ describe('regedit', function () {
 			})
 		})
 
+		it('handle spaces in registry keys', function (done) {
+			var key = 'HKCU\\Keyboard Layout'
+			
+			index.list([key], function(err, result) {
+				result[key].should.have.property('keys')
+				result[key].keys.should.containEql('Preload')
+				result[key].keys.should.containEql('Substitutes')
+				result[key].keys.should.containEql('Toggle')
+				
+				done()
+			})
+		})
+
 		it('will fail for unknown hives', function(done) {
 			index.list('lala\\software', function(err, result) {
 				should(err).not.be.null
@@ -51,7 +64,7 @@ describe('regedit', function () {
 
 	describe('create keys', function () {
 		var key = 'HKCU\\software\\ironSource\\regedit\\test\\'
-		var now
+		var now = Date.now().toString()
 
 		it('will throw an error if we dont have permission', function (done) {
 			index.createKey('HKLM\\SECURITY\\unauthorized', function(err, result) {
@@ -61,7 +74,7 @@ describe('regedit', function () {
 			})
 		})
 
-		it(key, function (done) {
+		it(key + now, function (done) {
 			index.createKey(key + now, function(err) {
 				if (err) return done(err)
 				
@@ -75,14 +88,14 @@ describe('regedit', function () {
 			})
 		})
 
-		beforeEach(function () {
+		afterEach(function () {
 			now = Date.now().toString()
 		})
 	})
 
 	describe('delete keys', function () {
 		var key = 'HKCU\\software\\ironSource\\regedit\\test\\'
-		var now
+		var now = Date.now().toString()
 	
 		it('will throw an error if we attempt to delete a key without permission', function (done) {
 			index.deleteKey('HKLM\\SECURITY', function(err) {
@@ -92,7 +105,7 @@ describe('regedit', function () {
 			})
 		})
 
-		it(key, function (done) {
+		it(key + now, function (done) {
 			index.createKey(key + now, function(err) {
 				if (err) return done(err)
 
@@ -115,21 +128,21 @@ describe('regedit', function () {
 			})
 		})
 
-		beforeEach(function () {
+		afterEach(function () {
 			now = Date.now().toString()
 		})
 	})
 
-	describe('put value', function () {
+	describe('put values', function () {
 		var key = 'HKCU\\software\\ironSource\\regedit\\test\\'
-		var now
+		var now = Date.now().toString()
 
-		it(key, function (done) {
+		it('in ' + key + now, function (done) {
 			var map = {}
 			map[key + now] = {
-				'a': {
+				'a key': {
 					type: 'reg_sz',
-					value: 'string'
+					value: 'some string'
 				},
 
 				'b': {
@@ -161,14 +174,13 @@ describe('regedit', function () {
 			index.putValue(map, function(err) {
 				if (err) return done(err)
 				
-				index.list(key + now, function(err, result) {
-					//console.log(result)
+				index.list(key + now, function(err, result) {					
 					if (err) return done(err)
 					var values = result[key + now].values
 
-					values.should.have.property('a')
-					values.a.type.should.eql('REG_SZ')
-					values.a.value.should.eql('string')
+					values.should.have.property('a key')
+					values['a key'].type.should.eql('REG_SZ')
+					values['a key'].value.should.eql('some string')
 
 					values.should.have.property('b')
 					values.b.type.should.eql('REG_BINARY')
@@ -195,9 +207,12 @@ describe('regedit', function () {
 			})
 		})
 
-		beforeEach(function (done) {
-			now = Date.now().toString()
+		beforeEach(function (done) {			
 			index.createKey(key + now, done)
+		})
+
+		afterEach(function () {
+			now = Date.now().toString()
 		})
 	})
 })
