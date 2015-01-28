@@ -1,0 +1,28 @@
+<job id="deleteKey">
+	<script language="VBScript" src="util.vbs" />
+	<script language="VBScript" src="regUtil.vbs" />
+	<script language="VBScript">
+
+		' bail if args not here
+		If args.Count = 0 Then
+			Write "usage: cscript regDeleteKey.wsf regpath1 [regpath2] ... [regpathN]"
+			WScript.Quit 25121
+		End If
+
+		For v = 0 To args.Count - 1
+		
+			ParseHiveAndSubKey args(v), constHive, strSubKey
+
+			if IsNull(constHive) Then
+				Write "unsupported hive " & args(v)
+				WScript.Quit 25122   
+			End If
+
+			Result = DeleteKey(constHive, strSubKey)
+
+			If Not Result = 0 Then				
+				WScript.Quit Result
+			End If
+		Next
+	</script>
+</job>

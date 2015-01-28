@@ -1,0 +1,29 @@
+{
+  "name": "regedit",
+  "version": "0.0.1",
+  "description": "Read, Write and do all sorts of other funky stuff to the windows registry from node.js using windows script host",
+  "keywords": [
+    "windows",
+    "registry"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha -R spec"
+  },
+  "dependencies": {
+    "debug": "^2.1.1"
+  },
+  "author": "Yaniv Kessler",
+  "bugs": {
+    "url": "https://github.com/ironSource/node-regedit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ironSource/node-regedit"
+  },
+  "homepage": "https://github.com/ironSource/node-regedit",
+  "license": "MIT",
+  "devDependencies": {
+    "should": "^4.4.2"
+  }
+}
