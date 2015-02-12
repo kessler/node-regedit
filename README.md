@@ -99,7 +99,7 @@ Supported value types are:
 ## Friendly warning regarding 32bit and 64bit
 When launching a 32bit application in 64bit environment, some of your paths will be relative to wow6432node. Things might get a little unexpected if you expected to find something in HKLM\Software in regedit.exe while in fact it is located at HKLM\Software\wow6432node.
 
-Further reading (here)[https://msdn.microsoft.com/en-us/library/windows/desktop/ms724072%28v=vs.85%29.aspx]
+Further reading [here](https://msdn.microsoft.com/en-us/library/windows/desktop/ms724072%28v=vs.85%29.aspx)
 
 ## Develop
 
