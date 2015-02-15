@@ -9,6 +9,16 @@ errors[25122].code = 25122
 errors[25123] = new Error('expected to have groups of 4 arguments for each value that is written to the registry')
 errors[25123].code = 25123
 
+errors[25124] = new Error('missing or invalid architecture from arguments, use "A" (agnostic), "S" (specific), "32" or "64"')
+errors[25124].code = 25124
+
+errors[25125] = new Error('missing OSArchitecture global. Forgot to load util.vbs? submit an issue asap with steps to recreate')
+errors[25125].code = 25125
+
+errors[25126] = new Error('invalid os architecture detected')
+errors[25126].code = 25126
+
+
 //TODO: this is an error that is caused by trying to create a registry key somewhere I dont have permissions to
 // where is the reference for these codes....???
 errors[5] = new Error('access is denied')

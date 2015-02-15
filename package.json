@@ -17,6 +17,9 @@
   "bugs": {
     "url": "https://github.com/ironSource/node-regedit/issues"
   },
+  "os": [
+    "win32"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/ironSource/node-regedit"

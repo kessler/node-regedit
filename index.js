@@ -5,46 +5,44 @@ var debug = require('debug')('regedit')
 var errors = require('./errors.js')
 var os = require('os')
 
+/*
+ * 	Access the registry without using a specific os architecture, this means that on a 32bit process on a 64bit machine
+ * 	when we access hklm\software we will actually be accessing hklm\software\wow6432node.
+ */
+var OS_ARCH_AGNOSTIC = 'A'
+
+/*
+ * 	Access the registry using a specific os architecture, but determine what the architecture is automatically
+ * 	This means that accessing in order to access the 32bit software registry on a 64bit machine we will need to
+ * 	use the key hklm\software\wow6432node
+ */
+var OS_ARCH_SPECIFIC = 'S'
+
+/*
+ * 	Access the registry using 32bit os architecture
+ */
+var OS_ARCH_32BIT = '32'
+
+/*
+ * 	Access the registry using 64bit os architecture, this will have no effect on 32bit process/machines
+ */
+var OS_ARCH_64BIT = '64'
+
 module.exports.list = function (keys, callback) {
-	executeCommand(prepareCommand('regList.wsf', keys), callback)
-}
-
-module.exports.arch = {}
-
-var arch = os.arch() === 'x64' ? '64' : '32'
-
-module.exports.getArch = function () {
-	return arch
-}
-
-module.exports.arch.list = function(keys, callback) {
-	
-	if (arch === '64') {
-		return module.exports.arch.list64(keys, callback)
-	} else {
-		return module.exports.arch.list32(keys, callback)
-	}
-}
-
-module.exports.arch.list32 = function (keys, callback) {
-	executeCommand(prepareCommand('regList.wsf', keys, '32'), callback)
-}
-
-module.exports.arch.list64 = function (keys, callback) {
-	executeCommand(prepareCommand('regList.wsf', keys, '64'), callback)
+	executeCommand(prepareCommand('regList.wsf', keys, OS_ARCH_AGNOSTIC), callback)
 }
 
 module.exports.createKey = function (keys, callback) {
-	executeCommand(prepareCommand('regCreateKey.wsf', keys), callback)
+	executeCommand(prepareCommand('regCreateKey.wsf', keys, OS_ARCH_AGNOSTIC), callback)
 }
 
 module.exports.deleteKey = function (keys, callback) {
-	executeCommand(prepareCommand('regDeleteKey.wsf', keys), callback)
+	executeCommand(prepareCommand('regDeleteKey.wsf', keys, OS_ARCH_AGNOSTIC), callback)
 }
 
 module.exports.putValue = function(map, callback) {
 	
-	var cmd = 'regPutValue.wsf *'
+	var cmd = 'regPutValue.wsf ' + OS_ARCH_AGNOSTIC
 
 	for (var key in map) {		
 		var values = map[key]
@@ -59,6 +57,21 @@ module.exports.putValue = function(map, callback) {
 	}
 
 	executeCommand(cmd, callback)
+}
+
+
+module.exports.arch = {}
+
+module.exports.arch.list = function(keys, callback) {
+	executeCommand(prepareCommand('regList.wsf', keys, OS_ARCH_SPECIFIC), callback)
+}
+
+module.exports.arch.list32 = function (keys, callback) {
+	executeCommand(prepareCommand('regList.wsf', keys, OS_ARCH_32BIT), callback)
+}
+
+module.exports.arch.list64 = function (keys, callback) {
+	executeCommand(prepareCommand('regList.wsf', keys, OS_ARCH_64BIT), callback)
 }
 
 function executeCommand(cmd, callback) {
@@ -130,9 +143,7 @@ function renderValueByType(value, type) {
 	}
 }
 
-function prepareCommand(cmd, args, architecture) {
-	architecture = architecture || '*'
-
+function prepareCommand(cmd, args, architecture) {	
 	cmd += ' ' + architecture
 
 	if (typeof args === 'string') {

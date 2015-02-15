@@ -1,11 +1,24 @@
 ' TODO: consider incorporating a json writer of some sort instead of adhoc solution like the following
 ' e.g: http://demon.tw/my-work/vbs-json.html
-	
+
 const HKEY_CLASSES_ROOT = &H80000000
 const HKEY_CURRENT_USER = &H80000001
 const HKEY_LOCAL_MACHINE = &H80000002
 const HKEY_USERS = &H80000003
 const HKEY_CURRENT_CONFIG = &H80000005
+
+Sub LoadRegistryImplementationByOSArchitecture()
+	If IsNull(OSArchitecture) Then
+		WriteLineErr "missing OSArchitecture global. did not call util.DetermineOSArchitecture? or Forgot to load util.vbs?"
+		WScript.Quit 25125		
+	End If
+
+	If OSArchitecture = "A" Then
+		Include "ArchitectureAgnosticRegistry.vbs"
+	Else
+		Include "ArchitectureSpecificRegistry.vbs"
+	End If
+End Sub 
 
 Function PutValue(constHive, strSubKey, strValueName, strValue, strType)
 	Select Case UCase(strType)
@@ -92,8 +105,7 @@ End Sub
 ' output the hive constant and the subkey, in this case:
 ' HKEY_LOCAL_MACHINE will be assigned to outConstHive
 ' and something\somewhere will be assigned to outStrSubKey
-Sub ParseHiveAndSubKey(strRawKey, outConstHive, outStrSubKey)
-
+Sub ParseHiveAndSubKey(strRawKey, outConstHive, outStrSubKey)	
 	' split into two parts to deduce the hive and the sub key
 	arrSplitted = Split(strRawKey, "\", 2, 1)
 	

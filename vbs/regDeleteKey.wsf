@@ -1,14 +1,11 @@
 <job id="deleteKey">
-	<script language="VBScript" src="util.vbs" />
-	<script language="VBScript" src="ArchitectureAgnosticRegistry.vbs" />
+	<script language="VBScript" src="util.vbs" />	
 	<script language="VBScript" src="regUtil.vbs" />
 	<script language="VBScript">
 
-		' bail if args not here
-		If args.Count = 0 Then
-			WriteLineErr "usage: cscript regDeleteKey.wsf architecture regpath1 [regpath2] ... [regpathN]"
-			WScript.Quit 25121
-		End If
+		CheckZeroArgs("usage: cscript regDeleteKey.wsf architecture regpath1 [regpath2] ... [regpathN]")
+		DetermineOSArchitecture()
+		LoadRegistryImplementationByOSArchitecture()
 
 		For v = 1 To args.Count - 1
 		

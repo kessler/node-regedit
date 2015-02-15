@@ -19,22 +19,11 @@
 <job id="regList">
 	<script language="VBScript" src="util.vbs" />	
 	<script language="VBScript" src="regUtil.vbs" />
-	<script language="VBScript">
-
-		' bail if args not here
-		If args.Count = 0 Then
-			WriteLineErr "usage: cscript regList.wsf architecture regpath1 [regpath2] ... [regpathN]"
-			WScript.Quit 25121
-		End If
-
-		Architecture = args(v)
-
-		If Architecture = "*" Then
-			Include "ArchitectureAgnosticRegistry.vbs"
-		Else
-			Include "ArchitectureSpecificRegistry.vbs"
-		End If
-
+	<script language="VBScript">		
+		CheckZeroArgs("usage: cscript regList.wsf architecture regpath1 [regpath2] ... [regpathN]")
+		DetermineOSArchitecture()
+		LoadRegistryImplementationByOSArchitecture()
+	
 		Write "{"
 		For v = 1 To args.Count - 1
 			if (v > 1) Then
@@ -52,6 +41,7 @@
 
 			ListChildrenAsJson constHive, strSubKey
 		Next
+		
 		Write "}"
 	</script>
 </job>

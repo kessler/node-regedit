@@ -7,7 +7,7 @@
 Set private_oReg = GetObject("winmgmts:\root\default:StdRegProv")		
 
 Set private_oCtx = CreateObject("WbemScripting.SWbemNamedValueSet")
-private_oCtx.Add "__ProviderArchitecture", CInt(Architecture)
+private_oCtx.Add "__ProviderArchitecture", CInt(OSArchitecture)
 
 Set private_oLocator = CreateObject("Wbemscripting.SWbemLocator")
 Set private_oServices = private_oLocator.ConnectServer(".", "root\default","","",,,,private_oCtx)
