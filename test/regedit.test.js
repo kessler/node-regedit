@@ -24,6 +24,22 @@ describe('regedit', function () {
 			})
 		})
 
+		it('HKLM\\software 32bit', function (done) {
+			index.list32('HKLM\\software', function(err, result) {
+				if (err) return done(err)
+				console.log(result)
+				done()
+			})
+		})
+
+		it.only('HKLM\\software 64bit', function (done) {
+			index.list64('HKLM\\software', function(err, result) {
+				if (err) return done(err)
+				console.log(result)	
+				done()
+			})
+		})
+
 		it('can be applied to several independant keys at once', function (done) {
 			index.list(['hklm', 'hkcu'], function (err, result) {
 				if (err) return done(err)

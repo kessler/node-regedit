@@ -17,19 +17,27 @@
 '		}
 '	}
 <job id="regList">
-	<script language="VBScript" src="util.vbs" />
+	<script language="VBScript" src="util.vbs" />	
 	<script language="VBScript" src="regUtil.vbs" />
 	<script language="VBScript">
-		
+
 		' bail if args not here
 		If args.Count = 0 Then
-			WriteLineErr "usage: cscript regList.wsf regpath1 [regpath2] ... [regpathN]"
+			WriteLineErr "usage: cscript regList.wsf architecture regpath1 [regpath2] ... [regpathN]"
 			WScript.Quit 25121
 		End If
 
+		Architecture = args(v)
+
+		If Architecture = "*" Then
+			Include "ArchitectureAgnosticRegistry.vbs"
+		Else
+			Include "ArchitectureSpecificRegistry.vbs"
+		End If
+
 		Write "{"
-		For v = 0 To args.Count - 1
-			if (v > 0) Then
+		For v = 1 To args.Count - 1
+			if (v > 1) Then
 				Write ","
 			End If
 

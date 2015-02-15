@@ -1,8 +1,9 @@
 <job id="putValue">
 	<script language="VBScript" src="util.vbs" />
+	<script language="VBScript" src="ArchitectureAgnosticRegistry.vbs" />
 	<script language="VBScript" src="regUtil.vbs" />
 	<script language="VBScript">
-		usage = "usage: cscript regPutValue.wsf regpath1 valueName1 value1 type1 ... [regpathN valueNameN valueN typeN]" & vbNewLine _
+		usage = "usage: cscript regPutValue.wsf architecture regpath1 valueName1 value1 type1 ... [regpathN valueNameN valueN typeN]" & vbNewLine _
 					& "types: REG_SZ, REG_EXPAND_SZ, REG_BINARY, REG_DWORD, REG_MULTI_SZ, REG_QWORD"
 	
 		' bail if args not here

@@ -8,6 +8,14 @@ module.exports.list = function (keys, callback) {
 	executeCommand(prepareCommand('regList.wsf', keys), callback)
 }
 
+module.exports.list32 = function (keys, callback) {
+	executeCommand(prepareCommand('regList.wsf', keys, '32'), callback)
+}
+
+module.exports.list64 = function (keys, callback) {
+	executeCommand(prepareCommand('regList.wsf', keys, '64'), callback)
+}
+
 module.exports.createKey = function (keys, callback) {
 	executeCommand(prepareCommand('regCreateKey.wsf', keys), callback)
 }
@@ -70,6 +78,8 @@ function execChildProcess(cmd, callback) {
 		// in case we have stuff in stderr but no real error
 		if (stderr) return callback(new Error(stderr))
 	
+		debug(stdout)
+
 		var result
 		try {
 			result = JSON.parse(stdout)
@@ -102,11 +112,15 @@ function renderValueByType(value, type) {
 	}
 }
 
-function prepareCommand(cmd, args) {
+function prepareCommand(cmd, args, architecture) {
+	architecture = architecture || '*'
+
+	cmd += ' ' + architecture
+
 	if (typeof args === 'string') {
 		return cmd += ' ' + wrapDoubleQuotes(args)
 	} else if (util.isArray(args)) {
-		return cmd += wrapItemsWithDoubleQuotes(args)
+		return cmd += ' ' + wrapItemsWithDoubleQuotes(args)
 	} else {
 		return cmd
 	}
@@ -116,12 +130,18 @@ function wrapItemsWithDoubleQuotes(arr) {
 	var result = ''
 
 	for (var i = 0; i < arr.length; i++) {
-		result += ' ' + wrapDoubleQuotes(arr[i])		
+		if (i > 0)
+			result += ' '
+
+		result += wrapDoubleQuotes(arr[i])		
 	}
 
 	return result
 }
 
+/*
+ * conditionally wrap items with double quotes if they aren't wrapped already
+ */
 function wrapDoubleQuotes(item) {
 	if (item[0] !== '"' && item[item.length - 1] !== '"') {
 		return '"' + item + '"'

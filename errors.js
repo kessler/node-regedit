@@ -6,7 +6,7 @@ errors[25121].code = 25121
 errors[25122] = new Error('unsupported hive')
 errors[25122].code = 25122
 
-//TODO: this is an error that is caused by trying to create a registry key in a place where I dont have permission
+//TODO: this is an error that is caused by trying to create a registry key somewhere I dont have permissions to
 // where is the reference for these codes....???
 errors[5] = new Error('access is denied')
 errors[5].code = 5

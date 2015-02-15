@@ -7,42 +7,30 @@ const HKEY_LOCAL_MACHINE = &H80000002
 const HKEY_USERS = &H80000003
 const HKEY_CURRENT_CONFIG = &H80000005
 
-' get a reference to the registry
-Set oReg = GetObject( "winmgmts:\root\default:StdRegProv")
-
-Function CreateKey(constHive, strSubKey)
-	CreateKey = oReg.CreateKey(constHive, strSubKey)	
-End Function
-
-Function DeleteKey(constHive, strSubKey)
-	DeleteKey = oReg.DeleteKey(constHive, strSubKey)
-End Function
-
-
 Function PutValue(constHive, strSubKey, strValueName, strValue, strType)
 	Select Case UCase(strType)
 		
 		Case "REG_SZ"
-			PutValue = oReg.SetStringValue(constHive, strSubKey, strValueName, strValue)
+			PutValue = SetStringValue(constHive, strSubKey, strValueName, strValue)
 
 		Case "REG_EXPAND_SZ"
-			PutValue = oReg.SetExpandedStringValue(constHive, strSubKey, strValueName, strValue)
+			PutValue = SetExpandedStringValue(constHive, strSubKey, strValueName, strValue)
 
 		Case "REG_BINARY"
-			PutValue = oReg.SetBinaryValue(constHive, strSubKey, strValueName, ToBinaryValue(strValue))
+			PutValue = SetBinaryValue(constHive, strSubKey, strValueName, ToBinaryValue(strValue))
 
 		' TODO: need to check that indeed int is the right type here
 		Case "REG_DWORD"
-			PutValue = oReg.SetDWORDValue(constHive, strSubKey, strValueName, CInt(strValue))
+			PutValue = SetDWORDValue(constHive, strSubKey, strValueName, CInt(strValue))
 
 		Case "REG_MULTI_SZ"
-			PutValue = oReg.SetMultiStringValue(constHive, strSubKey, strValueName, Split(strValue, ","))
+			PutValue = SetMultiStringValue(constHive, strSubKey, strValueName, Split(strValue, ","))
 
 		Case "REG_QWORD"
-			PutValue = oReg.SetQWORDValue(constHive, strSubKey, strValueName, CInt(strValue))
+			PutValue = SetQWORDValue(constHive, strSubKey, strValueName, CInt(strValue))
 
 		Case Else
-			PutValue = oReg.SetStringValue(constHive, strSubKey, strValueName, strValue)
+			PutValue = SetStringValue(constHive, strSubKey, strValueName, strValue)
 
 	End Select
 End Function
@@ -51,8 +39,8 @@ End Function
 ' as json.
 Sub ListChildrenAsJson(constHive, strSubKey)
 
-	oReg.EnumKey constHive, strSubKey, arrKeyNames
-	oReg.EnumValues constHive, strSubKey, arrValueNames, arrValueTypes
+	EnumKey constHive, strSubKey, arrKeyNames
+	EnumValues constHive, strSubKey, arrValueNames, arrValueTypes
 
 	' start outputting json to stdout
 	Write "{"
@@ -106,7 +94,7 @@ End Sub
 ' and something\somewhere will be assigned to outStrSubKey
 Sub ParseHiveAndSubKey(strRawKey, outConstHive, outStrSubKey)
 
-	' split args(0) into two parts to deduce the hive and the sub key
+	' split into two parts to deduce the hive and the sub key
 	arrSplitted = Split(strRawKey, "\", 2, 1)
 	
 	If UBound(arrSplitted) > 0 Then
@@ -169,22 +157,22 @@ Function RenderValueByType(constHive, strKey, strValueName, intType)
 	
 	Select Case intType
 		Case 1
-			oReg.GetStringValue constHive, strKey, strValueName, strValue
+			GetStringValue constHive, strKey, strValueName, strValue
 			RenderValueByType = """" & JsonSafe(strValue) & """"
 		Case 2
-			oReg.GetExpandedStringValue constHive, strKey, strValueName, strValue
+			GetExpandedStringValue constHive, strKey, strValueName, strValue
 			RenderValueByType = """" & JsonSafe(strValue) & """"
 		Case 3
-			oReg.GetBinaryValue constHive, strKey, strValueName, arrBinaryValue			
+			GetBinaryValue constHive, strKey, strValueName, arrBinaryValue			
 			RenderValueByType = RenderByteArray(arrBinaryValue)
 		Case 4
-			oReg.GetDWORDValue constHive, strKey, strValueName, intDWordValue
+			GetDWORDValue constHive, strKey, strValueName, intDWordValue
 			RenderValueByType= intDWordValue
 		Case 7
-			oReg.GetMultiStringValue constHive, strKey, strValueName, arrStrValue			
+			GetMultiStringValue constHive, strKey, strValueName, arrStrValue			
 			RenderValueByType = RenderStringArray(arrStrValue)
 		Case 11	
-			oReg.GetQWORDValue constHive, strKey, strValueName, intQWordValue
+			GetQWORDValue constHive, strKey, strValueName, intQWordValue
 			RenderValueByType = intQWordValue
 	End Select
 
