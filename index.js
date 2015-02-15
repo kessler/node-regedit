@@ -28,67 +28,66 @@ var OS_ARCH_32BIT = '32'
  */
 var OS_ARCH_64BIT = '64'
 
-module.exports.list = function (keys, callback) {
-	executeCommand(prepareCommand('regList.wsf', keys, OS_ARCH_AGNOSTIC), callback)
+module.exports.list = function (keys, architecture, callback) {
+	if (typeof architecture === 'function') {
+		callback = architecture
+		architecture = OS_ARCH_AGNOSTIC
+	}
+
+	var args = toCommandArgs('regList.wsf', architecture, keys)	
+	execute(args, callback)
 }
 
 module.exports.createKey = function (keys, callback) {
-	executeCommand(prepareCommand('regCreateKey.wsf', keys, OS_ARCH_AGNOSTIC), callback)
+	var args = toCommandArgs('regCreateKey.wsf', OS_ARCH_AGNOSTIC, keys)
+	execute(args, callback)
 }
 
 module.exports.deleteKey = function (keys, callback) {
-	executeCommand(prepareCommand('regDeleteKey.wsf', keys, OS_ARCH_AGNOSTIC), callback)
+	var args = toCommandArgs('regDeleteKey.wsf', OS_ARCH_AGNOSTIC, keys)
+	execute(args, callback)	
 }
 
 module.exports.putValue = function(map, callback) {
+	var args = baseCommand('regPutValue.wsf', OS_ARCH_AGNOSTIC)
 	
-	var cmd = 'regPutValue.wsf ' + OS_ARCH_AGNOSTIC
-
 	for (var key in map) {		
 		var values = map[key]
 		for (var valueName in values) {
 			var entry = values[valueName]
-			var line = wrapDoubleQuotes(key) + ' ' + wrapDoubleQuotes(valueName) + ' ' 
-						+ wrapDoubleQuotes(renderValueByType(entry.value, entry.type)) + ' ' 
-						+ entry.type
-
-			cmd += ' ' + line
+			args.push(key)
+			args.push(valueName)
+			args.push(renderValueByType(entry.value, entry.type))
+			args.push(entry.type)			
 		}
 	}
 
-	executeCommand(cmd, callback)
+	execute(args, callback)
 }
-
 
 module.exports.arch = {}
 
 module.exports.arch.list = function(keys, callback) {
-	executeCommand(prepareCommand('regList.wsf', keys, OS_ARCH_SPECIFIC), callback)
+	module.exports.list(keys, OS_ARCH_SPECIFIC, callback)	
 }
 
 module.exports.arch.list32 = function (keys, callback) {
-	executeCommand(prepareCommand('regList.wsf', keys, OS_ARCH_32BIT), callback)
+	module.exports.list(keys, OS_ARCH_32BIT, callback)
 }
 
 module.exports.arch.list64 = function (keys, callback) {
-	executeCommand(prepareCommand('regList.wsf', keys, OS_ARCH_64BIT), callback)
+	module.exports.list(keys, OS_ARCH_64BIT, callback)	
 }
 
-function executeCommand(cmd, callback) {
+function execute(args, callback) {
 
 	if (typeof callback !== 'function') {
 		throw new Error('missing callback')
 	}
 
-	execChildProcess(cmd, callback)	
-}
+	debug(args)
 
-function execChildProcess(cmd, callback) {
-	cmd = 'cscript.exe //Nologo ' + path.join(__dirname, 'vbs', cmd)
-	
-	debug(cmd)
-
-	child.exec(cmd, function (err, stdout, stderr) {	
+	child.execFile('cscript.exe', args, function (err, stdout, stderr) {	
 
 		if (err) {
 			if (stdout) {
@@ -109,7 +108,7 @@ function execChildProcess(cmd, callback) {
 		// in case we have stuff in stderr but no real error
 		if (stderr) return callback(new Error(stderr))
 	
-		debug(stdout, stderr)
+		debug(stdout)
 
 		var result
 		try {
@@ -143,38 +142,19 @@ function renderValueByType(value, type) {
 	}
 }
 
-function prepareCommand(cmd, args, architecture) {	
-	cmd += ' ' + architecture
-
-	if (typeof args === 'string') {
-		return cmd += ' ' + wrapDoubleQuotes(args)
-	} else if (util.isArray(args)) {
-		return cmd += ' ' + wrapItemsWithDoubleQuotes(args)
+function toCommandArgs(cmd, arch, keys) {
+	var result = baseCommand(cmd, arch)
+	if (typeof keys === 'string') {		
+		result.push(keys)
+	} else if (util.isArray(keys)) {		
+		result = result.concat(keys)
 	} else {
-		return cmd
-	}
-}
-
-function wrapItemsWithDoubleQuotes(arr) {
-	var result = ''
-
-	for (var i = 0; i < arr.length; i++) {
-		if (i > 0)
-			result += ' '
-
-		result += wrapDoubleQuotes(arr[i])		
+		debug('creating command without using keys %s', keys)		
 	}
 
 	return result
 }
 
-/*
- * conditionally wrap items with double quotes if they aren't wrapped already
- */
-function wrapDoubleQuotes(item) {
-	if (item[0] !== '"' && item[item.length - 1] !== '"') {
-		return '"' + item + '"'
-	}
-
-	return item
+function baseCommand(cmd, arch) {
+	return ['/Nologo', path.join(__dirname, 'vbs', cmd), arch]
 }
