@@ -3,16 +3,34 @@ var child = require('child_process')
 var path = require('path')
 var debug = require('debug')('regedit')
 var errors = require('./errors.js')
+var os = require('os')
 
 module.exports.list = function (keys, callback) {
 	executeCommand(prepareCommand('regList.wsf', keys), callback)
 }
 
-module.exports.list32 = function (keys, callback) {
+module.exports.arch = {}
+
+var arch = os.arch() === 'x64' ? '64' : '32'
+
+module.exports.getArch = function () {
+	return arch
+}
+
+module.exports.arch.list = function(keys, callback) {
+	
+	if (arch === '64') {
+		return module.exports.arch.list64(keys, callback)
+	} else {
+		return module.exports.arch.list32(keys, callback)
+	}
+}
+
+module.exports.arch.list32 = function (keys, callback) {
 	executeCommand(prepareCommand('regList.wsf', keys, '32'), callback)
 }
 
-module.exports.list64 = function (keys, callback) {
+module.exports.arch.list64 = function (keys, callback) {
 	executeCommand(prepareCommand('regList.wsf', keys, '64'), callback)
 }
 
@@ -26,7 +44,7 @@ module.exports.deleteKey = function (keys, callback) {
 
 module.exports.putValue = function(map, callback) {
 	
-	var cmd = 'regPutValue.wsf '
+	var cmd = 'regPutValue.wsf *'
 
 	for (var key in map) {		
 		var values = map[key]
@@ -78,7 +96,7 @@ function execChildProcess(cmd, callback) {
 		// in case we have stuff in stderr but no real error
 		if (stderr) return callback(new Error(stderr))
 	
-		debug(stdout)
+		debug(stdout, stderr)
 
 		var result
 		try {

@@ -56,6 +56,15 @@ The result will look something like the following:
 }
 ```
 
+### regedit.arch.list32([String|Array], [Function])
+same as list, only force a 32bit architecture on the registry
+
+### regedit.arch.list64([String|Array], [Function])
+same as list, only force a 64bit architecture on the registry
+
+### regedit.arch.list([String|Array], [Function])
+same as list, only force your system architecture on the registry (select automatically between list64 and list32)
+
 ### regedit.createKey([String|Array], [Function])
 Creates one or more keys in the registry
 

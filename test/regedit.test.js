@@ -24,18 +24,60 @@ describe('regedit', function () {
 			})
 		})
 
-		it('HKLM\\software 32bit', function (done) {
-			index.list32('HKLM\\software', function(err, result) {
+		// TODO need to find a better way to test the 32bit/64bit scenario
+		it(target + ' 32bit', function (done) {
+			index.arch.list32(target, function(err, result) {
 				if (err) return done(err)
-				console.log(result)
+		
+				result.should.have.property(target)
+
+				var key = result[target]
+			
+				key.should.have.property('keys')
+				key.should.have.property('values')
+				key.keys.should.containEql('Policies')
+				key.values.should.have.property('ProgramFilesDir')
+				key.values.ProgramFilesDir.should.have.property('value', 'C:\\Program Files')
+				key.values.ProgramFilesDir.should.have.property('type', 'REG_SZ')
+			
 				done()
 			})
 		})
 
-		it.only('HKLM\\software 64bit', function (done) {
-			index.list64('HKLM\\software', function(err, result) {
+		it(target + ' 64bit', function (done) {
+			index.arch.list64(target, function(err, result) {
 				if (err) return done(err)
-				console.log(result)	
+		
+				result.should.have.property(target)
+
+				var key = result[target]
+			
+				key.should.have.property('keys')
+				key.should.have.property('values')
+				key.keys.should.containEql('Policies')
+				key.values.should.have.property('ProgramFilesDir')
+				key.values.ProgramFilesDir.should.have.property('value', 'C:\\Program Files')
+				key.values.ProgramFilesDir.should.have.property('type', 'REG_SZ')
+			
+				done()
+			})
+		})
+
+		it(target + ' arch auto pick', function (done) {
+			index.arch.list(target, function(err, result) {
+				if (err) return done(err)
+		
+				result.should.have.property(target)
+
+				var key = result[target]
+			
+				key.should.have.property('keys')
+				key.should.have.property('values')
+				key.keys.should.containEql('Policies')
+				key.values.should.have.property('ProgramFilesDir')
+				key.values.ProgramFilesDir.should.have.property('value', 'C:\\Program Files')
+				key.values.ProgramFilesDir.should.have.property('type', 'REG_SZ')
+			
 				done()
 			})
 		})

@@ -6,6 +6,9 @@ errors[25121].code = 25121
 errors[25122] = new Error('unsupported hive')
 errors[25122].code = 25122
 
+errors[25123] = new Error('expected to have groups of 4 arguments for each value that is written to the registry')
+errors[25123].code = 25123
+
 //TODO: this is an error that is caused by trying to create a registry key somewhere I dont have permissions to
 // where is the reference for these codes....???
 errors[5] = new Error('access is denied')
