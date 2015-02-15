@@ -17,6 +17,11 @@ regedit.list('HKCU\\SOFTWARE', function(err, result) {
 })
 ```
 
+## Friendly warning regarding 32bit and 64bit OS / Process
+When launching a 32bit application in 64bit environment, some of your paths will be relative to wow6432node. Things might get a little unexpected if you try to find something you thought was in HKLM\Software when in fact it is located at HKLM\Software\wow6432node. To overcome this the [arch](#regeditarchliststringarray-function) methods were added.
+
+Further reading [here](https://msdn.microsoft.com/en-us/library/windows/desktop/ms724072%28v=vs.85%29.aspx)
+
 ## API
 Every command executes a sub process that runs vbscript code. To boost efficiency, every command supports batching.
 
@@ -104,11 +109,6 @@ Supported value types are:
 - REG_DWORD, REG_QWORD: should use javascript numbers
 - REG_MULTI_SZ: an array of strings
 - REG_BINARY: an array of numbers (representing bytes)
-
-## Friendly warning regarding 32bit and 64bit
-When launching a 32bit application in 64bit environment, some of your paths will be relative to wow6432node. Things might get a little unexpected if you expected to find something in HKLM\Software in regedit.exe while in fact it is located at HKLM\Software\wow6432node.
-
-Further reading [here](https://msdn.microsoft.com/en-us/library/windows/desktop/ms724072%28v=vs.85%29.aspx)
 
 ## Develop
 
