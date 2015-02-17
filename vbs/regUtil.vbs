@@ -166,7 +166,7 @@ End Function
 ' numeric values like DWORD and QWORD just return as the number e.g. 1
 ' byte arrays such as reg_binary return as an array of ints, e.g [1,2,3]
 Function RenderValueByType(constHive, strKey, strValueName, intType)
-	
+
 	Select Case intType
 		Case 1
 			GetStringValue constHive, strKey, strValueName, strValue
