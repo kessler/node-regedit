@@ -1,3 +1,5 @@
+// TODO need to find a better way to test the 32bit/64bit specific scenarios
+
 var index = require('../index')
 var should = require('should')
 
@@ -24,7 +26,6 @@ describe('regedit', function () {
 			})
 		})
 
-		// TODO need to find a better way to test the 32bit/64bit scenario
 		it(target + ' 32bit', function (done) {
 			index.arch.list32(target, function(err, result) {
 				if (err) return done(err)
@@ -146,6 +147,48 @@ describe('regedit', function () {
 			})
 		})
 
+		it(key + now + ' S', function (done) {
+			index.arch.createKey(key + now, function(err) {
+				if (err) return done(err)
+				
+				// testing using the module itself is not the best idea...
+				index.arch.list(key, function(err, result) {
+					if (err) return done(err)
+
+					result[key].keys.should.containEql(now)
+					done()
+				})
+			})
+		})
+
+		it(key + now + ' 32bit', function (done) {
+			index.arch.createKey32(key + now, function(err) {
+				if (err) return done(err)
+				
+				// testing using the module itself is not the best idea...
+				index.arch.list32(key, function(err, result) {
+					if (err) return done(err)
+
+					result[key].keys.should.containEql(now)
+					done()
+				})
+			})
+		})
+
+		it(key + now + ' 64bit', function (done) {
+			index.arch.createKey64(key + now, function(err) {
+				if (err) return done(err)
+				
+				// testing using the module itself is not the best idea...
+				index.arch.list64(key, function(err, result) {
+					if (err) return done(err)
+
+					result[key].keys.should.containEql(now)
+					done()
+				})
+			})
+		})
+
 		afterEach(function () {
 			now = Date.now().toString()
 		})
@@ -186,6 +229,75 @@ describe('regedit', function () {
 			})
 		})
 
+		it(key + now + ' S', function (done) {
+			index.arch.createKey(key + now, function(err) {
+				if (err) return done(err)
+
+				index.arch.list(key, function(err, result) {
+					if (err) return done(err)
+
+					result[key].keys.should.containEql(now)
+
+					index.arch.deleteKey(key + now, function(err) {
+						if (err) return done(err)
+
+						index.list(key, function(err, result1) {
+							if (err) return done(err)
+
+							result1.should.not.containEql(now)
+							done()
+						})
+					})
+				})
+			})
+		})
+
+		it(key + now + ' 32bit', function (done) {
+			index.arch.createKey32(key + now, function(err) {
+				if (err) return done(err)
+
+				index.arch.list32(key, function(err, result) {
+					if (err) return done(err)
+
+					result[key].keys.should.containEql(now)
+
+					index.arch.deleteKey32(key + now, function(err) {
+						if (err) return done(err)
+
+						index.list(key, function(err, result1) {
+							if (err) return done(err)
+
+							result1.should.not.containEql(now)
+							done()
+						})
+					})
+				})
+			})
+		})
+
+		it(key + now + ' 64bit', function (done) {
+			index.arch.createKey64(key + now, function(err) {
+				if (err) return done(err)
+
+				index.arch.list64(key, function(err, result) {
+					if (err) return done(err)
+
+					result[key].keys.should.containEql(now)
+
+					index.arch.deleteKey64(key + now, function(err) {
+						if (err) return done(err)
+
+						index.list(key, function(err, result1) {
+							if (err) return done(err)
+
+							result1.should.not.containEql(now)
+							done()
+						})
+					})
+				})
+			})
+		})
+
 		afterEach(function () {
 			now = Date.now().toString()
 		})
@@ -194,41 +306,9 @@ describe('regedit', function () {
 	describe('put values', function () {
 		var key = 'HKCU\\software\\ironSource\\regedit\\test\\'
 		var now = Date.now().toString()
-
-		it('in ' + key + now, function (done) {
-			var map = {}
-			map[key + now] = {
-				'a key': {
-					type: 'reg_sz',
-					value: 'some string'
-				},
-
-				'b': {
-					type: 'reg_binary',
-					value: [1, 2, 3]
-				},
-
-				'c': {
-					type: 'reg_dword',
-					value: 10
-				},
-
-				'd': {
-					type: 'reg_qword',
-					value: 100
-				},
-
-				'e': {
-					type: 'reg_expand_sz',
-					value: 'expand_string'
-				},
-
-				'f': {
-					type: 'reg_multi_sz',
-					value: ['a', 'b', 'c']
-				}
-			}
-
+		var map = {}
+			
+		it('in ' + key + now, function (done) {			
 			index.putValue(map, function(err) {
 				if (err) return done(err)
 				
@@ -262,11 +342,153 @@ describe('regedit', function () {
 
 					done()
 				})
-			})
+			})		
+		})
+
+		it('in ' + key + now +  ' S', function (done) {			
+			index.arch.putValue(map, function(err) {
+				if (err) return done(err)
+				
+				index.arch.list(key + now, function(err, result) {					
+					if (err) return done(err)
+					var values = result[key + now].values
+
+					values.should.have.property('a key')
+					values['a key'].type.should.eql('REG_SZ')
+					values['a key'].value.should.eql('some string')
+
+					values.should.have.property('b')
+					values.b.type.should.eql('REG_BINARY')
+					values.b.value.should.eql([1,2,3])
+					
+					values.should.have.property('c')
+					values.c.type.should.eql('REG_DWORD')
+					values.c.value.should.eql(10)
+
+					values.should.have.property('d')
+					values.d.type.should.eql('REG_QWORD')
+					values.d.value.should.eql(100)
+
+					values.should.have.property('e')
+					values.e.type.should.eql('REG_EXPAND_SZ')
+					values.e.value.should.eql('expand_string')
+					
+					values.should.have.property('f')
+					values.f.type.should.eql('REG_MULTI_SZ')
+					values.f.value.should.eql(['a', 'b', 'c'])
+
+					done()
+				})
+			})		
+		})
+
+		it('in ' + key + now + ' 32bit', function (done) {			
+			index.arch.putValue32(map, function(err) {
+				if (err) return done(err)
+				
+				index.arch.list32(key + now, function(err, result) {					
+					if (err) return done(err)
+					var values = result[key + now].values
+
+					values.should.have.property('a key')
+					values['a key'].type.should.eql('REG_SZ')
+					values['a key'].value.should.eql('some string')
+
+					values.should.have.property('b')
+					values.b.type.should.eql('REG_BINARY')
+					values.b.value.should.eql([1,2,3])
+					
+					values.should.have.property('c')
+					values.c.type.should.eql('REG_DWORD')
+					values.c.value.should.eql(10)
+
+					values.should.have.property('d')
+					values.d.type.should.eql('REG_QWORD')
+					values.d.value.should.eql(100)
+
+					values.should.have.property('e')
+					values.e.type.should.eql('REG_EXPAND_SZ')
+					values.e.value.should.eql('expand_string')
+					
+					values.should.have.property('f')
+					values.f.type.should.eql('REG_MULTI_SZ')
+					values.f.value.should.eql(['a', 'b', 'c'])
+
+					done()
+				})
+			})		
+		})
+
+		it('in ' + key + now + '64bit', function (done) {			
+			index.arch.putValue64(map, function(err) {
+				if (err) return done(err)
+				
+				index.arch.list64(key + now, function(err, result) {					
+					if (err) return done(err)
+					var values = result[key + now].values
+
+					values.should.have.property('a key')
+					values['a key'].type.should.eql('REG_SZ')
+					values['a key'].value.should.eql('some string')
+
+					values.should.have.property('b')
+					values.b.type.should.eql('REG_BINARY')
+					values.b.value.should.eql([1,2,3])
+					
+					values.should.have.property('c')
+					values.c.type.should.eql('REG_DWORD')
+					values.c.value.should.eql(10)
+
+					values.should.have.property('d')
+					values.d.type.should.eql('REG_QWORD')
+					values.d.value.should.eql(100)
+
+					values.should.have.property('e')
+					values.e.type.should.eql('REG_EXPAND_SZ')
+					values.e.value.should.eql('expand_string')
+					
+					values.should.have.property('f')
+					values.f.type.should.eql('REG_MULTI_SZ')
+					values.f.value.should.eql(['a', 'b', 'c'])
+
+					done()
+				})
+			})		
 		})
 
 		beforeEach(function (done) {			
 			index.createKey(key + now, done)
+			map[key + now] = {
+				'a key': {
+					type: 'reg_sz',
+					value: 'some string'
+				},
+
+				'b': {
+					type: 'reg_binary',
+					value: [1, 2, 3]
+				},
+
+				'c': {
+					type: 'reg_dword',
+					value: 10
+				},
+
+				'd': {
+					type: 'reg_qword',
+					value: 100
+				},
+
+				'e': {
+					type: 'reg_expand_sz',
+					value: 'expand_string'
+				},
+
+				'f': {
+					type: 'reg_multi_sz',
+					value: ['a', 'b', 'c']
+				}
+			}
 		})
 
 		afterEach(function () {

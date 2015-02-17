@@ -27,7 +27,7 @@ Function CheckAccess(hDefKey,sSubKeyName,uRequired, bGranted )
 	bGranted = Outparams.Bgranted
 	
 
-	CheckAccess = ""
+	CheckAccess = 0
 	
 End Function
 
@@ -41,7 +41,7 @@ Function CreateKey(hDefKey,sSubKeyName)
 	set Outparams = private_oRegSpecific.ExecMethod_("CreateKey", Inparams,,private_oCtx)
 	
 
-	CreateKey = ""
+	CreateKey = 0
 	
 End Function
 
@@ -55,7 +55,7 @@ Function DeleteKey(hDefKey,sSubKeyName)
 	set Outparams = private_oRegSpecific.ExecMethod_("DeleteKey", Inparams,,private_oCtx)
 	
 
-	DeleteKey = ""
+	DeleteKey = 0
 	
 End Function
 
@@ -71,7 +71,7 @@ Function DeleteValue(hDefKey,sSubKeyName,sValueName)
 	set Outparams = private_oRegSpecific.ExecMethod_("DeleteValue", Inparams,,private_oCtx)
 	
 
-	DeleteValue = ""
+	DeleteValue = 0
 	
 End Function
 
@@ -81,13 +81,13 @@ Function EnumKey(hDefKey,sSubKeyName, sNames )
 	Inparams.Hdefkey = hDefKey
 	
 	Inparams.Ssubkeyname = sSubKeyName
-		
+	
 	set Outparams = private_oRegSpecific.ExecMethod_("EnumKey", Inparams,,private_oCtx)
 	
 	sNames = Outparams.Snames
 	
 
-	EnumKey = ""
+	EnumKey = 0
 	
 End Function
 
@@ -97,7 +97,7 @@ Function EnumValues(hDefKey,sSubKeyName, sNames,Types )
 	Inparams.Hdefkey = hDefKey
 	
 	Inparams.Ssubkeyname = sSubKeyName
-		
+
 	set Outparams = private_oRegSpecific.ExecMethod_("EnumValues", Inparams,,private_oCtx)
 	
 	sNames = Outparams.Snames
@@ -105,7 +105,7 @@ Function EnumValues(hDefKey,sSubKeyName, sNames,Types )
 	Types = Outparams.Types
 	
 
-	EnumValues = ""
+	EnumValues = 0
 	
 End Function
 
@@ -123,7 +123,7 @@ Function GetBinaryValue(hDefKey,sSubKeyName,sValueName, uValue )
 	uValue = Outparams.Uvalue
 	
 
-	GetBinaryValue = ""
+	GetBinaryValue = 0
 	
 End Function
 
@@ -141,7 +141,7 @@ Function GetDWORDValue(hDefKey,sSubKeyName,sValueName, uValue )
 	uValue = Outparams.Uvalue
 	
 
-	GetDWORDValue = ""
+	GetDWORDValue = 0
 	
 End Function
 
@@ -159,7 +159,7 @@ Function GetExpandedStringValue(hDefKey,sSubKeyName,sValueName, sValue )
 	sValue = Outparams.Svalue
 	
 
-	GetExpandedStringValue = ""
+	GetExpandedStringValue = 0
 	
 End Function
 
@@ -177,7 +177,7 @@ Function GetMultiStringValue(hDefKey,sSubKeyName,sValueName, sValue )
 	sValue = Outparams.Svalue
 	
 
-	GetMultiStringValue = ""
+	GetMultiStringValue = 0
 	
 End Function
 
@@ -190,12 +190,10 @@ Function GetQWORDValue(hDefKey,sSubKeyName,sValueName,uValue)
 	
 	Inparams.Svaluename = sValueName
 	
-	Inparams.Uvalue = uValue
-		
 	set Outparams = private_oRegSpecific.ExecMethod_("GetQWORDValue", Inparams,,private_oCtx)
-	
+	uValue = Outparams.uValue
 
-	GetQWORDValue = ""
+	GetQWORDValue = 0
 	
 End Function
 
@@ -209,9 +207,8 @@ Function GetSecurityDescriptor(hDefKey,sSubKeyName, Descriptor )
 	set Outparams = private_oRegSpecific.ExecMethod_("GetSecurityDescriptor", Inparams,,private_oCtx)
 	
 	Descriptor = Outparams.Descriptor
-	
 
-	GetSecurityDescriptor = ""
+	GetSecurityDescriptor = 0
 	
 End Function
 
@@ -229,7 +226,7 @@ Function GetStringValue(hDefKey,sSubKeyName,sValueName, sValue )
 	sValue = Outparams.Svalue
 	
 
-	GetStringValue = ""
+	GetStringValue = 0
 	
 End Function
 
@@ -247,7 +244,7 @@ Function SetBinaryValue(hDefKey,sSubKeyName,sValueName,uValue)
 	set Outparams = private_oRegSpecific.ExecMethod_("SetBinaryValue", Inparams,,private_oCtx)
 	
 
-	SetBinaryValue = ""
+	SetBinaryValue = 0
 	
 End Function
 
@@ -265,7 +262,7 @@ Function SetDWORDValue(hDefKey,sSubKeyName,sValueName,uValue)
 	set Outparams = private_oRegSpecific.ExecMethod_("SetDWORDValue", Inparams,,private_oCtx)
 	
 
-	SetDWORDValue = ""
+	SetDWORDValue = 0
 	
 End Function
 
@@ -283,7 +280,7 @@ Function SetExpandedStringValue(hDefKey,sSubKeyName,sValueName,sValue)
 	set Outparams = private_oRegSpecific.ExecMethod_("SetExpandedStringValue", Inparams,,private_oCtx)
 	
 
-	SetExpandedStringValue = ""
+	SetExpandedStringValue = 0
 	
 End Function
 
@@ -301,7 +298,7 @@ Function SetMultiStringValue(hDefKey,sSubKeyName,sValueName,sValue)
 	set Outparams = private_oRegSpecific.ExecMethod_("SetMultiStringValue", Inparams,,private_oCtx)
 	
 
-	SetMultiStringValue = ""
+	SetMultiStringValue = 0
 	
 End Function
 
@@ -313,13 +310,13 @@ Function SetQWORDValue(hDefKey,sSubKeyName,sValueName,uValue)
 	Inparams.Ssubkeyname = sSubKeyName
 	
 	Inparams.Svaluename = sValueName
-	
+
 	Inparams.Uvalue = uValue
-		
+
 	set Outparams = private_oRegSpecific.ExecMethod_("SetQWORDValue", Inparams,,private_oCtx)
 	
 
-	SetQWORDValue = ""
+	SetQWORDValue = 0
 	
 End Function
 
@@ -335,7 +332,7 @@ Function SetSecurityDescriptor(hDefKey,sSubKeyName,Descriptor)
 	set Outparams = private_oRegSpecific.ExecMethod_("SetSecurityDescriptor", Inparams,,private_oCtx)
 	
 
-	SetSecurityDescriptor = ""
+	SetSecurityDescriptor = 0
 	
 End Function
 
@@ -353,7 +350,6 @@ Function SetStringValue(hDefKey,sSubKeyName,sValueName,sValue)
 	set Outparams = private_oRegSpecific.ExecMethod_("SetStringValue", Inparams,,private_oCtx)
 	
 
-	SetStringValue = ""
+	SetStringValue = 0
 	
 End Function
-

@@ -38,18 +38,33 @@ module.exports.list = function (keys, architecture, callback) {
 	execute(args, callback)
 }
 
-module.exports.createKey = function (keys, callback) {
-	var args = toCommandArgs('regCreateKey.wsf', OS_ARCH_AGNOSTIC, keys)
+module.exports.createKey = function (keys, architecture, callback) {
+	if (typeof architecture === 'function') {
+		callback = architecture
+		architecture = OS_ARCH_AGNOSTIC
+	}
+
+	var args = toCommandArgs('regCreateKey.wsf', architecture, keys)
 	execute(args, callback)
 }
 
-module.exports.deleteKey = function (keys, callback) {
-	var args = toCommandArgs('regDeleteKey.wsf', OS_ARCH_AGNOSTIC, keys)
+module.exports.deleteKey = function (keys, architecture, callback) {
+	if (typeof architecture === 'function') {
+		callback = architecture
+		architecture = OS_ARCH_AGNOSTIC
+	}
+
+	var args = toCommandArgs('regDeleteKey.wsf', architecture, keys)
 	execute(args, callback)	
 }
 
-module.exports.putValue = function(map, callback) {
-	var args = baseCommand('regPutValue.wsf', OS_ARCH_AGNOSTIC)
+module.exports.putValue = function(map, architecture, callback) {
+	if (typeof architecture === 'function') {
+		callback = architecture
+		architecture = OS_ARCH_AGNOSTIC
+	}
+
+	var args = baseCommand('regPutValue.wsf', architecture)
 	
 	for (var key in map) {		
 		var values = map[key]
@@ -78,6 +93,43 @@ module.exports.arch.list32 = function (keys, callback) {
 module.exports.arch.list64 = function (keys, callback) {
 	module.exports.list(keys, OS_ARCH_64BIT, callback)	
 }
+
+module.exports.arch.createKey = function (keys, callback) {
+	module.exports.createKey(keys, OS_ARCH_SPECIFIC, callback)
+}
+
+module.exports.arch.createKey32 = function (keys, callback) {
+	module.exports.createKey(keys, OS_ARCH_32BIT, callback)
+}
+
+module.exports.arch.createKey64 = function (keys, callback) {
+	module.exports.createKey(keys, OS_ARCH_64BIT, callback)
+}
+
+module.exports.arch.deleteKey = function (keys, callback) {
+	module.exports.deleteKey(keys, OS_ARCH_SPECIFIC, callback)
+}
+
+module.exports.arch.deleteKey32 = function (keys, callback) {
+	module.exports.deleteKey(keys, OS_ARCH_32BIT, callback)
+}
+
+module.exports.arch.deleteKey64 = function (keys, callback) {
+	module.exports.deleteKey(keys, OS_ARCH_64BIT, callback)
+}
+
+module.exports.arch.putValue = function (keys, callback) {
+	module.exports.putValue(keys, OS_ARCH_SPECIFIC, callback)
+}
+
+module.exports.arch.putValue32 = function (keys, callback) {
+	module.exports.putValue(keys, OS_ARCH_32BIT, callback)
+}
+
+module.exports.arch.putValue64 = function (keys, callback) {
+	module.exports.putValue(keys, OS_ARCH_64BIT, callback)
+}
+
 
 function execute(args, callback) {
 
