@@ -216,10 +216,29 @@ Function RenderStringArray(arr)
 	RenderStringArray = Result
 End Function
 
+Function JsonU(astr)
+  Dim c 
+  Dim utftext 
+  utftext = ""
+  If isNull(astr) = false or astr <> "" Then
+    For n = 1 To Len(astr)
+      c = AscW(Mid(astr, n, 1))
+      If c < 128 And c > 0 Then
+        utftext = utftext + Mid(astr, n, 1)
+      ElseIf c > 128 And c <= 255 Then
+        utftext = utftext + "\x" + Hex(c)
+      Else
+        utftext = utftext + "\u" + Hex(c)
+      End If
+    Next
+  End If
+  JsonU = utftext
+End Function
+
 Function JsonSafe(outStrText)	
 	outStrText = Replace(outStrText, "\", "\\")
 	outStrText = Replace(outStrText, """", "\""")
-	JsonSafe = outStrText
+	JsonSafe = JsonU(outStrText)
 End Function
 
 Function ToBinaryValue(strValue)
