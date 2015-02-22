@@ -221,12 +221,12 @@ Function JsonU(astr)
   Dim utftext 
   utftext = ""
   If isNull(astr) = false or astr <> "" Then
-    ' disable astr = Replace(astr, "’", "'") 'replacing the apostrophe
-    ' disable astr = Replace(astr, "–", "-") 'replacing the emdash with minus sign
     For n = 1 To Len(astr)
       c = AscW(Mid(astr, n, 1))
       If c < 128 And c > 0 Then
         utftext = utftext + Mid(astr, n, 1)
+      ElseIf c > 128 And c <= 255 Then
+        utftext = utftext + "\x" + Hex(c)
       Else
         utftext = utftext + "\u" + Hex(c)
       End If
