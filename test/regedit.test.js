@@ -340,6 +340,10 @@ describe('regedit', function () {
 					values.f.type.should.eql('REG_MULTI_SZ')
 					values.f.value.should.eql(['a', 'b', 'c'])
 
+					values.should.have.property('测试')
+					values['测试'].type.should.eql('REG_SZ')
+					values['测试'].value.should.eql('值 test for non-English environment')
+
 					done()
 				})
 			})		
@@ -376,6 +380,10 @@ describe('regedit', function () {
 					values.should.have.property('f')
 					values.f.type.should.eql('REG_MULTI_SZ')
 					values.f.value.should.eql(['a', 'b', 'c'])
+
+					values.should.have.property('测试')
+					values['测试'].type.should.eql('REG_SZ')
+					values['测试'].value.should.eql('值 test for non-English environment')
 
 					done()
 				})
@@ -414,6 +422,10 @@ describe('regedit', function () {
 					values.f.type.should.eql('REG_MULTI_SZ')
 					values.f.value.should.eql(['a', 'b', 'c'])
 
+					values.should.have.property('测试')
+					values['测试'].type.should.eql('REG_SZ')
+					values['测试'].value.should.eql('值 test for non-English environment')
+
 					done()
 				})
 			})		
@@ -451,6 +463,10 @@ describe('regedit', function () {
 					values.f.type.should.eql('REG_MULTI_SZ')
 					values.f.value.should.eql(['a', 'b', 'c'])
 
+					values.should.have.property('测试')
+					values['测试'].type.should.eql('REG_SZ')
+					values['测试'].value.should.eql('值 test for non-English environment')
+
 					done()
 				})
 			})		
@@ -487,6 +503,11 @@ describe('regedit', function () {
 				'f': {
 					type: 'reg_multi_sz',
 					value: ['a', 'b', 'c']
+				},
+
+				'测试': {
+					type: 'reg_sz',
+					value: '值 test for non-English environment'
 				}
 			}
 		})
