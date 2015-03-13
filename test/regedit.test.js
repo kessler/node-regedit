@@ -351,6 +351,18 @@ describe('regedit', function () {
 			})		
 		})
 
+		// it('with spaces in ' + key + now, function(done) {
+		// 	var values = {}
+		// 	values[key + now] = {
+		// 		'a key': {
+		// 			type: 'reg_sz',
+		// 			value: 'some string'
+		// 		}
+		// 	}
+			
+		// 	index.putValue()
+		// })
+
 		it('in ' + key + now +  ' S', function (done) {			
 			index.arch.putValue(map, function(err) {
 				if (err) return done(err)

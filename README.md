@@ -30,12 +30,12 @@ Lists the direct content of one or more sub keys. Specify an array instead of a 
 
 Given the command:
 ```javascript
-regedit.list(['HKCU\\SOFTWARE', 'HKLM\\SOFTWARE', function(err, result) {
+regedit.list(['HKCU\\SOFTWARE', 'HKLM\\SOFTWARE'], function(err, result) {
     ...
 })
 ```
 
-The result will look something like the following:
+*Result* will be an object with the following structure:
 ```javascript
 {
     'HKCU\\SOFTWARE': {
@@ -55,20 +55,67 @@ The result will look something like the following:
                 value: '123',
                 type: 'REG_SZ'
             }
-            ... more direct child values of HKCU\\SOFTWARE
+            ... more direct child values of HKLM\\SOFTWARE
         }
     }
 }
 ```
 
+### regedit.list([String|Array])
+Same as **regedit.list([String|Array], [Function])** only exposes a streaming interface instead of a callback, e.g:
+```javascript
+regedit.list(['HKCU\\SOFTWARE', 'HKLM\\SOFTWARE'])
+.on('data', function(entry) {
+    console.log(entry.key)
+    console.log(entry.data)
+})
+.on('finish', function () {
+    console.log('list operation finished')
+})
+```
+This code output will look like this:
+```
+HKCU\\SOFTWARE
+{
+    keys: [ 'Google', 'Microsoft', ... more direct sub keys ]
+    values: {
+        'valueName': {
+            value: '123',
+            type: 'REG_SZ'
+        }
+        ... more direct child values of HKCU\\SOFTWARE
+    }
+}
+HKLM\\SOFTWARE
+{
+    keys: [ 'Google', 'Microsoft', ... more direct sub keys ]
+    values: {
+        'valueName': {
+            value: '123',
+            type: 'REG_SZ'
+        }
+        ... more direct child values of HKLM\\SOFTWARE    
+    }
+}
+```
+
 ### regedit.arch.list32([String|Array], [Function])
-same as list, only force a 32bit architecture on the registry
+same as *regedit.list([String|Array], [Function])*, only force a 32bit architecture on the registry
+
+### regedit.arch.list32([String|Array])
+streaming interface, see *regedit.list([String|Array])*
 
 ### regedit.arch.list64([String|Array], [Function])
 same as list, only force a 64bit architecture on the registry
 
+### regedit.arch.list64([String|Array])
+streaming interface, see *regedit.list([String|Array])*
+
 ### regedit.arch.list([String|Array], [Function])
 same as list, only force your system architecture on the registry (select automatically between list64 and list32)
+
+### regedit.arch.list([String|Array])
+streaming interface, see *regedit.list([String|Array])*
 
 ### regedit.createKey([String|Array], [Function])
 Creates one or more keys in the registry

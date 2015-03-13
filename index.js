@@ -1,9 +1,12 @@
 var util = require('util')
-var child = require('child_process')
+var childProcess = require('child_process')
 var path = require('path')
 var debug = require('debug')('regedit')
 var errors = require('./errors.js')
 var os = require('os')
+var StreamSlicer = require('stream-slicer')
+var through2 = require('through2')
+var helper = require('./lib/helper.js')
 
 /*
  * 	Access the registry without using a specific os architecture, this means that on a 32bit process on a 64bit machine
@@ -29,13 +32,32 @@ var OS_ARCH_32BIT = '32'
 var OS_ARCH_64BIT = '64'
 
 module.exports.list = function (keys, architecture, callback) {
-	if (typeof architecture === 'function') {
+	
+	if (architecture === undefined) {
+		callback = undefined
+		architecture = OS_ARCH_AGNOSTIC
+	} else if (typeof architecture === 'function') {
 		callback = architecture
 		architecture = OS_ARCH_AGNOSTIC
 	}
 
-	var args = toCommandArgs('regList.wsf', architecture, keys)	
-	execute(args, callback)
+	if (typeof keys === 'string') {
+		keys = [keys]
+	}
+
+	if (typeof callback === 'function') {		
+		execute(toCommandArgs('regList.wsf', architecture, keys), callback)
+	} else {
+		var child = spawn(toCommandArgs('regListStream.wsf', architecture)	)
+
+		var slicer = new StreamSlicer({ sliceBy: helper.WIN_EOL })
+		
+		var stream = child.stdout.pipe(slicer).pipe(through2.obj(helper.vbsOutputTransform))
+		
+		helper.writeArrayToStream(keys, child.stdin)
+
+		return stream
+	}
 }
 
 module.exports.createKey = function (keys, architecture, callback) {
@@ -139,7 +161,7 @@ function execute(args, callback) {
 
 	debug(args)
 
-	child.execFile('cscript.exe', args, function (err, stdout, stderr) {	
+	childProcess.execFile('cscript.exe', args, function (err, stdout, stderr) {	
 
 		if (err) {
 			if (stdout) {
@@ -173,6 +195,13 @@ function execute(args, callback) {
 	})
 }
 
+function spawn(args) {
+
+	debug(args)
+
+	return childProcess.spawn('cscript.exe', args)
+}
+
 function renderValueByType(value, type) {
 	type = type.toUpperCase()
 
@@ -201,7 +230,7 @@ function toCommandArgs(cmd, arch, keys) {
 	} else if (util.isArray(keys)) {		
 		result = result.concat(keys)
 	} else {
-		debug('creating command without using keys %s', keys)		
+		debug('creating command without using keys %s', keys ? keys : '')		
 	}
 
 	return result

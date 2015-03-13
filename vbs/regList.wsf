@@ -16,8 +16,9 @@
 '			}
 '		}
 '	}
-<job id="regList">
-	<script language="VBScript" src="util.vbs" />	
+<job id="list">
+	<script language="VBScript" src="util.vbs" />
+	<script language="VBScript" src="JsonSafe.vbs" />
 	<script language="VBScript" src="regUtil.vbs" />
 	<script language="VBScript">		
 		CheckZeroArgs("usage: cscript regList.wsf architecture regpath1 [regpath2] ... [regpathN]")
@@ -41,7 +42,6 @@
 
 			ListChildrenAsJson constHive, strSubKey
 		Next
-		
 		Write "}"
 	</script>
 </job>

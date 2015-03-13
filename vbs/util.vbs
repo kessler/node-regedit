@@ -1,5 +1,6 @@
 Set stdout = WScript.StdOut
 Set stderr = WScript.StdErr
+Set stdin = WScript.StdIn
 Set args = WScript.Arguments
 Set fs = CreateObject("scripting.filesystemobject") 
 Dim OSArchitecture
@@ -111,4 +112,24 @@ Function GetOSArchitecture()
 		GetOSArchitecture = -1
 	End If 
 	
+End Function
+
+'TODO: need to change this function's name to something more appropriate
+Function JsonU(astr)
+	Dim c 
+	Dim utftext 
+	utftext = ""
+	If isNull(astr) = false or astr <> "" Then
+		For n = 1 To Len(astr)
+			c = AscW(Mid(astr, n, 1))
+			If c < 128 And c > 0 Then
+				utftext = utftext & Mid(astr, n, 1)
+			ElseIf c > 128 And c <= 255 Then
+				utftext = utftext & "\x" & Hex(c)
+			Else
+				utftext = utftext & "\u" & Hex(c)
+			End If
+		Next
+	End If
+	JsonU = utftext
 End Function

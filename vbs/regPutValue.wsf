@@ -1,5 +1,6 @@
 <job id="putValue">
-	<script language="VBScript" src="util.vbs" />	
+	<script language="VBScript" src="util.vbs" />
+	<script language="VBScript" src="JsonSafe.vbs" />
 	<script language="VBScript" src="regUtil.vbs" />
 	<script language="VBScript">
 		usage = "usage: cscript regPutValue.wsf architecture regpath1 valueName1 value1 type1 ... [regpathN valueNameN valueN typeN]" & vbNewLine _

@@ -11,7 +11,9 @@
     "test": "mocha -R spec"
   },
   "dependencies": {
-    "debug": "^2.1.1"
+    "debug": "^2.1.1",
+    "stream-slicer": "0.0.6",
+    "through2": "^0.6.3"
   },
   "author": "Yaniv Kessler",
   "bugs": {
