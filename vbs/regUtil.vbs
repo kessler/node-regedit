@@ -42,6 +42,9 @@ Function PutValue(constHive, strSubKey, strValueName, strValue, strType)
 		Case "REG_QWORD"
 			PutValue = SetQWORDValue(constHive, strSubKey, strValueName, CInt(strValue))
 
+		Case "REG_DEFAULT"
+			PutValue = SetStringValue(constHive, strSubKey, "", strValue)
+
 		Case Else
 			PutValue = SetStringValue(constHive, strSubKey, strValueName, strValue)
 
@@ -69,7 +72,8 @@ Sub ListChildrenAsJson(constHive, strSubKey)
 		Next		
 		Write "]"
 	End If
-
+	
+	' TODO: some duplicity of code between the two paths of this condition, this needs to be address at some point
 	If Not IsNull(arrValueNames) Then
 
 		If Not IsNull(arrKeyNames) Then
@@ -84,21 +88,43 @@ Sub ListChildrenAsJson(constHive, strSubKey)
 
 			strValueName = arrValueNames(y)
 			intValueType = arrValueTypes(y)
-
-			Write """"  
-			Write JsonSafe(strValueName)
-			Write """:{"
-			Write """type"": """
-			Write RenderType(intValueType)
-			Write ""","
-			Write """value"":"
-			Write RenderValueByType(constHive, strSubKey, strValueName, intValueType)
-			Write "}"
-		Next
+			
+			' assign the value to varValue
+			GetValueByType constHive, strSubKey, strValueName, intValueType, varValue
+			
+			WriteValue strValueName, intValueType, varValue
+		Next			
 		Write "}"
+	Else
+		' fix for keys with only default values in them
+		' see http://stackoverflow.com/questions/8840343/how-to-read-the-default-value-from-registry-in-vbscript
+		GetStringValue constHive, strSubKey, "", strDefaultValue
+
+		If IsNull(strDefaultValue) = false and strDefaultValue <> "" Then
+			If Not IsNull(arrKeyNames) Then
+				Write ","
+			End If
+
+			Write """values"":{"	
+			' write the default value with REG_SZ
+			WriteValue "", 1, strDefaultValue
+			Write "}"
+		End If
 	End If
 
 	Write "}"	
+End Sub
+
+Sub WriteValue (strValueName, intValueType, varValue)
+	Write """"  
+	Write JsonSafe(strValueName)
+	Write """:{"
+	Write """type"": """
+	Write RenderType(intValueType)
+	Write ""","
+	Write """value"":"
+	Write RenderValueByType(intValueType, varValue)
+	Write "}"
 End Sub
 
 ' give a raw HKLM\something\somewhere
@@ -139,6 +165,9 @@ Function StringToHiveConst(strHive)
 
 End Function
 
+' TODO: this entire "by type" should be transformed into OOP style
+' where each type will have a class with render(), getValue() etc...
+
 ' convert a value type number into a string label
 Function RenderType(intType)
 	RenderType = "REG_UNKNOWN"
@@ -156,39 +185,92 @@ Function RenderType(intType)
 			RenderType = "REG_MULTI_SZ"
 		Case 11	
 			RenderType = "REG_QWORD"
+		Case Else
+			' TODO: should report / throw an error here
+			WriteErr("invalid Registry Value Type " & intType)
+
 	End Select
 
 End Function
 
-' get the value of a registry based on its value type and return it as json
-' string will return as a string with doubel quotes, e.g "value"
+' render by value type:
+' string will return as a string with double quotes, e.g "value"
 ' multi string values which return as an array ot strings "["1", "2"]" (double quotes included ofc)
 ' numeric values like DWORD and QWORD just return as the number e.g. 1
 ' byte arrays such as reg_binary return as an array of ints, e.g [1,2,3]
-Function RenderValueByType(constHive, strKey, strValueName, intType)
+Function RenderValueByType(intType, varValue)
 
 	Select Case intType
+		' REG_SZ
 		Case 1
-			GetStringValue constHive, strKey, strValueName, strValue
-			RenderValueByType = """" & JsonSafe(strValue) & """"
+			RenderValueByType = """" & JsonSafe(varValue) & """"
+
+		' REG_EXPAND_SZ
 		Case 2
-			GetExpandedStringValue constHive, strKey, strValueName, strValue
-			RenderValueByType = """" & JsonSafe(strValue) & """"
+			RenderValueByType = """" & JsonSafe(varValue) & """"
+
+		' REG_BINARY
 		Case 3
-			GetBinaryValue constHive, strKey, strValueName, arrBinaryValue			
-			RenderValueByType = RenderByteArray(arrBinaryValue)
+			RenderValueByType = RenderByteArray(varValue)
+
+		' REG_DWORD
 		Case 4
-			GetDWORDValue constHive, strKey, strValueName, intDWordValue
-			RenderValueByType= intDWordValue
+			RenderValueByType= varValue
+
+		' REG_MULYI_SZ'
 		Case 7
-			GetMultiStringValue constHive, strKey, strValueName, arrStrValue			
-			RenderValueByType = RenderStringArray(arrStrValue)
-		Case 11	
-			GetQWORDValue constHive, strKey, strValueName, intQWordValue
-			RenderValueByType = intQWordValue
+
+			RenderValueByType = RenderStringArray(varValue)
+		' REG_QWORD
+		Case 11
+			RenderValueByType = varValue
+		Case Else
+			' TODO: should report / throw an error here
+			WriteErr("invalid Registry Value Type " & intType)
 	End Select
 
 End Function
+
+' get the value of a registry based on its value type and assign it to out parameter outVarValue
+Sub GetValueByType(constHive, strKey, strValueName, intType, outVarValue)
+
+	Select Case intType
+		' REG_SZ
+		Case 1
+			GetStringValue constHive, strKey, strValueName, outVarValue
+			Exit Sub
+
+		' REG_EXPAND_SZ
+		Case 2
+			GetExpandedStringValue constHive, strKey, strValueName, outVarValue			
+			Exit Sub
+			
+		' REG_BINARY
+		Case 3
+			GetBinaryValue constHive, strKey, strValueName, outVarValue
+			Exit Sub
+			
+		' REG_DWORD
+		Case 4
+			GetDWORDValue constHive, strKey, strValueName, outVarValue
+			Exit Sub
+			
+		' REG_MULYI_SZ'
+		Case 7
+			GetMultiStringValue constHive, strKey, strValueName, outVarValue
+			Exit Sub
+			
+		' REG_QWORD
+		Case 11	
+			GetQWORDValue constHive, strKey, strValueName, outVarValue
+			Exit Sub
+		
+		Case Else
+			' TODO: should report / throw an error here
+			WriteErr("invalid Registry Value Type " & intType)	
+	End Select
+
+End Sub
 
 ' render a byte array as a json array of numbers
 Function RenderByteArray(arr)

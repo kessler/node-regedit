@@ -15,7 +15,7 @@
 			WScript.Quit 25123
 		End If
 
-		For v = 1 To args.Count - 4 Step 4			
+		For v = 1 To args.Count - 4 Step 4
 			ParseHiveAndSubKey args(v), constHive, strSubKey
 
 			if IsNull(constHive) Then

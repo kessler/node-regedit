@@ -15,7 +15,7 @@ describe('json safe stream version', function () {
 			stdout.should.eql(expected)
 
 			// TODO: separate this to a different test
-			stdout = helper.unescapeStreamOutput(stdout)
+			stdout = helper.unescapeVbsStreamOutput(stdout)
 			
 			JSON.parse(stdout).a.should.eql(helper.WIN_EOL)
 

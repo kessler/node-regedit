@@ -121,6 +121,15 @@ describe('regedit', function () {
 				done()
 			})
 		})
+
+		it('lists default values', function (done) {
+			index.list('HKCR\\Directory\\shell\\cmd\\command', function (err, results) {
+				if (err) return done(err)
+				results['HKCR\\Directory\\shell\\cmd\\command'].should.have.property('values')
+				results['HKCR\\Directory\\shell\\cmd\\command'].values.should.have.property('')
+				done()
+			})
+		})
 	})
 
 	describe('create keys', function () {
@@ -351,17 +360,27 @@ describe('regedit', function () {
 			})		
 		})
 
-		// it('with spaces in ' + key + now, function(done) {
-		// 	var values = {}
-		// 	values[key + now] = {
-		// 		'a key': {
-		// 			type: 'reg_sz',
-		// 			value: 'some string'
-		// 		}
-		// 	}
+		it('default value in ' + key + now, function(done) {
+			var values = {}
+			values[key + now] = {
+				'default': {
+					type: 'reg_default',
+					value: 'default'
+				}
+			}
 			
-		// 	index.putValue()
-		// })
+			index.putValue(values, function(err) {
+				index.list(key + now, function (err, results) {
+					if (err) return done(err)
+					results[key + now].should.have.property('values')
+					results[key + now].values.should.have.property('', {
+						type: 'REG_SZ',
+						value: 'default'
+					})
+					done()
+				})
+			})
+		})
 
 		it('in ' + key + now +  ' S', function (done) {			
 			index.arch.putValue(map, function(err) {

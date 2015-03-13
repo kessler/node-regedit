@@ -202,6 +202,7 @@ function spawn(args) {
 	return childProcess.spawn('cscript.exe', args)
 }
 
+//TODO: move to helper.js?
 function renderValueByType(value, type) {
 	type = type.toUpperCase()
 
@@ -223,6 +224,7 @@ function renderValueByType(value, type) {
 	}
 }
 
+//TODO: move to helper.js?
 function toCommandArgs(cmd, arch, keys) {
 	var result = baseCommand(cmd, arch)
 	if (typeof keys === 'string') {		
@@ -236,6 +238,7 @@ function toCommandArgs(cmd, arch, keys) {
 	return result
 }
 
+//TODO: move to helper.js?
 function baseCommand(cmd, arch) {
 	return ['/Nologo', path.join(__dirname, 'vbs', cmd), arch]
 }
