@@ -91,8 +91,12 @@ regedit.list('path\\to\\default\\value', function (err, result) {
 ```
 For now this is how its going to be, but in the future this will probably change, possibly in a way that will effect the whole interface.
 
-#### regedit.list([String|Array]) - stream interface
-Same as **regedit.list([String|Array], [Function])** exposes a streaming interface instead of a callback. e.g:
+***list with callback api will be deperecated and eventually removed in future versions, take a look at the streaming interface below***
+
+### regedit.list([String|Array]) - streaming interface
+Same as **regedit.list([String|Array], [Function])** exposes a streaming interface instead of a callback. This is useful for situations where you have a lot of data coming in and out of the list process. Eventually this will completely replace the list() with callback api
+
+Example:
 ```javascript
 regedit.list(['HKCU\\SOFTWARE', 'HKLM\\SOFTWARE'])
 .on('data', function(entry) {
