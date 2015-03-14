@@ -10,7 +10,7 @@ describe('json safe stream version', function () {
 		cp.execFile('cscript', ['/NoLogo',  vbsScript], function(err, stdout, stderr) {
 			if (err) return done(err)
 
-			var expected = format('{ "a": "%s"}%s', helper.DOUBLY_ESCAPED_WIN_EOL, helper.WIN_EOL)
+			var expected = format('{ "a": "%s"}%s', escape(helper.DOUBLY_ESCAPED_WIN_EOL), helper.WIN_EOL)
 
 			stdout.should.eql(expected)
 

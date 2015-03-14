@@ -3,36 +3,57 @@
 	<script language="VBScript" src="JsonSafe.vbs" />
 	<script language="VBScript" src="regUtil.vbs" />
 	<script language="VBScript">
-		usage = "usage: cscript regPutValue.wsf architecture regpath1 valueName1 value1 type1 ... [regpathN valueNameN valueN typeN]" & vbNewLine _
+		usage = "usage: cscript regPutValue.wsf architecture" & vbNewLine _
 					& "types: REG_SZ, REG_EXPAND_SZ, REG_BINARY, REG_DWORD, REG_MULTI_SZ, REG_QWORD"
 	
 		CheckZeroArgs(usage)
 		DetermineOSArchitecture()
 		LoadRegistryImplementationByOSArchitecture()
+		
+		ReadCount = 0
+		Dim lineArgs(3)
 
-		If Not (args.Count - 1) Mod 4 = 0 Then			
-			WriteLineErr usage
-			WScript.Quit 25123
-		End If
-
-		For v = 1 To args.Count - 4 Step 4
-			ParseHiveAndSubKey args(v), constHive, strSubKey
-
-			if IsNull(constHive) Then
-				WriteLineErr "unsupported hive " & args(v)
-				WScript.Quit 25122       
+		Do While Not stdin.AtEndOfLine
+			strLine = stdin.ReadLine()
+			strLine = trim(strLine)
+			
+			strLine = unescape(strLine)
+		
+			If IsNull(strLine) or strLine = "" Then
+				WScript.Quit 25127
 			End If
 
-			strValueName = args(v + 1)
-			strValue = args(v + 2)
-			strType = args(v + 3)
-	
-			Result = PutValue(constHive, strSubKey, strValueName, strValue, strType)
+			lineArgs(ReadCount) = strLine
+			
+			ReadCount = ReadCount + 1
 
-			If Not Result = 0 Then
-				WriteLineErr "error while putting value"			
-				WScript.Quit Result
-			End If	
-		Next
+			If ReadCount = 4 Then
+
+				ParseHiveAndSubKey lineArgs(0), constHive, strSubKey
+				
+				if IsNull(constHive) Then
+					WriteLineErr "unsupported hive " & lineArgs(0)
+					WScript.Quit 25122
+				End If
+
+				strValueName = lineArgs(1)
+				strValue = lineArgs(2)
+				strType = lineArgs(3)
+				
+				Result = PutValue(constHive, strSubKey, strValueName, strValue, strType)
+
+				If Not Result = 0 Then
+					WriteLineErr "error while putting value: " & result
+					WScript.Quit Result
+				End If
+
+				ReadCount = 0
+				Erase lineArgs				
+			End If
+		Loop
+
+		If ReadCount <> 0 Then
+			WScript.Quit 25123
+		End If
 	</script>
 </job>

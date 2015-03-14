@@ -1,5 +1,7 @@
-Function JsonSafe(outStrText)
+Function JsonSafe(outStrText)	
 	outStrText = Replace(outStrText, "\", "\\")
-	outStrText = Replace(outStrText, """", "\""")	
-	JsonSafe = JsonU(outStrText)
+	outStrText = Replace(outStrText, """", "\""")
+	outStrText = JsonU(outStrText)
+	'JsonSafe = Escape(outStrText)
+	JsonSafe = outStrText
 End Function

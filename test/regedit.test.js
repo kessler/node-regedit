@@ -158,6 +158,21 @@ describe('regedit', function () {
 			})
 		})
 
+		it(key + now + '测试', function(done) {
+			index.createKey(key + now + '测试', function (err) {
+				if (err) return done(err)
+
+				index.list(key, function (err, results) {
+					if (err) return done(err)
+					
+					results[key].should.have.property('keys')
+					results[key].keys.should.containEql(now + '测试')
+
+					done()
+				})
+			})
+		})
+
 		it(key + now + ' S', function (done) {
 			index.arch.createKey(key + now, function(err) {
 				if (err) return done(err)
@@ -324,7 +339,11 @@ describe('regedit', function () {
 				if (err) return done(err)
 				
 				index.list(key + now, function(err, result) {					
-					if (err) return done(err)
+					if (err) {
+						console.error(result)
+						return done(err)
+					}
+					
 					var values = result[key + now].values
 
 					values.should.have.property('a key')
@@ -505,7 +524,7 @@ describe('regedit', function () {
 			})		
 		})
 
-		beforeEach(function (done) {			
+		beforeEach(function (done) {		
 			index.createKey(key + now, done)
 			map[key + now] = {
 				'a key': {

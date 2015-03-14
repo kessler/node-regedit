@@ -29,8 +29,8 @@
 		Do While Not stdin.AtEndOfLine
 
 			strLine = stdin.ReadLine()
-			strLine = trim(strLine)
-
+			strLine = unescape(trim(strLine))
+		
 			ParseHiveAndSubKey strLine, constHive, strSubKey
 
 			if IsNull(constHive) Then

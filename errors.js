@@ -18,11 +18,17 @@ errors[25125].code = 25125
 errors[25126] = new Error('invalid os architecture detected')
 errors[25126].code = 25126
 
+errors[25127] = new Error('empty line written to vbscript stdin')
+errors[25127].code = 25127
+
 
 //TODO: this is an error that is caused by trying to create a registry key somewhere I dont have permissions to
 // where is the reference for these codes....???
 errors[5] = new Error('access is denied')
 errors[5].code = 5
+
+errors[2] = new Error('registry path does not exist')
+errors[2].code = 2
 
 // *** generated errors ***//
 var e0 = new Error('wbemErrFailed')

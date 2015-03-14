@@ -32,7 +32,8 @@ var OS_ARCH_32BIT = '32'
 var OS_ARCH_64BIT = '64'
 
 module.exports.list = function (keys, architecture, callback) {
-	
+	//console.log('list with callback will be deprecated in future versions, use list streaming interface')
+
 	if (architecture === undefined) {
 		callback = undefined
 		architecture = OS_ARCH_AGNOSTIC
@@ -48,7 +49,9 @@ module.exports.list = function (keys, architecture, callback) {
 	if (typeof callback === 'function') {		
 		execute(toCommandArgs('regList.wsf', architecture, keys), callback)
 	} else {
-		var child = spawn(toCommandArgs('regListStream.wsf', architecture)	)
+		var child = spawn(baseCommand('regListStream.wsf', architecture))
+		
+		child.stderr.pipe(process.stderr)
 
 		var slicer = new StreamSlicer({ sliceBy: helper.WIN_EOL })
 		
@@ -66,8 +69,17 @@ module.exports.createKey = function (keys, architecture, callback) {
 		architecture = OS_ARCH_AGNOSTIC
 	}
 
-	var args = toCommandArgs('regCreateKey.wsf', architecture, keys)
-	execute(args, callback)
+	if (typeof keys === 'string') {
+		keys = [keys]
+	}
+
+	var args = baseCommand('regCreateKey.wsf', architecture)
+	
+	var child = spawn(args)
+
+	handleErrorsAndClose(child, callback)	
+
+	helper.writeArrayToStream(keys, child.stdin)
 }
 
 module.exports.deleteKey = function (keys, architecture, callback) {
@@ -76,8 +88,16 @@ module.exports.deleteKey = function (keys, architecture, callback) {
 		architecture = OS_ARCH_AGNOSTIC
 	}
 
-	var args = toCommandArgs('regDeleteKey.wsf', architecture, keys)
-	execute(args, callback)	
+	if (typeof keys === 'string') {
+		keys = [keys]
+	}
+
+	var args = baseCommand('regDeleteKey.wsf', architecture)
+
+	var child = spawn(args)
+	
+	handleErrorsAndClose(child, callback)	
+	helper.writeArrayToStream(keys, child.stdin)
 }
 
 module.exports.putValue = function(map, architecture, callback) {
@@ -87,69 +107,77 @@ module.exports.putValue = function(map, architecture, callback) {
 	}
 
 	var args = baseCommand('regPutValue.wsf', architecture)
+
+	var child = spawn(args)
+	
+	var values = []
 	
 	for (var key in map) {		
-		var values = map[key]
-		for (var valueName in values) {
-			var entry = values[valueName]
-			args.push(key)
-			args.push(valueName)
-			args.push(renderValueByType(entry.value, entry.type))
-			args.push(entry.type)			
+		var keyValues = map[key]
+
+		for (var valueName in keyValues) {
+			var entry = keyValues[valueName]
+			
+			// helper writes the array to the stream in reversed order
+			values.push(entry.type)
+			values.push(renderValueByType(entry.value, entry.type))
+			values.push(valueName)
+			values.push(key)
 		}
 	}
 
-	execute(args, callback)
+	handleErrorsAndClose(child, callback)
+	helper.writeArrayToStream(values, child.stdin)
 }
 
 module.exports.arch = {}
 
 module.exports.arch.list = function(keys, callback) {
-	module.exports.list(keys, OS_ARCH_SPECIFIC, callback)	
+	return module.exports.list(keys, OS_ARCH_SPECIFIC, callback)	
 }
 
 module.exports.arch.list32 = function (keys, callback) {
-	module.exports.list(keys, OS_ARCH_32BIT, callback)
+	return module.exports.list(keys, OS_ARCH_32BIT, callback)
 }
 
 module.exports.arch.list64 = function (keys, callback) {
-	module.exports.list(keys, OS_ARCH_64BIT, callback)	
+	return module.exports.list(keys, OS_ARCH_64BIT, callback)	
 }
 
 module.exports.arch.createKey = function (keys, callback) {
-	module.exports.createKey(keys, OS_ARCH_SPECIFIC, callback)
+	return module.exports.createKey(keys, OS_ARCH_SPECIFIC, callback)
 }
 
 module.exports.arch.createKey32 = function (keys, callback) {
-	module.exports.createKey(keys, OS_ARCH_32BIT, callback)
+	return module.exports.createKey(keys, OS_ARCH_32BIT, callback)
 }
 
 module.exports.arch.createKey64 = function (keys, callback) {
-	module.exports.createKey(keys, OS_ARCH_64BIT, callback)
+	return module.exports.createKey(keys, OS_ARCH_64BIT, callback)
 }
 
 module.exports.arch.deleteKey = function (keys, callback) {
-	module.exports.deleteKey(keys, OS_ARCH_SPECIFIC, callback)
+	return module.exports.deleteKey(keys, OS_ARCH_SPECIFIC, callback)
 }
 
 module.exports.arch.deleteKey32 = function (keys, callback) {
-	module.exports.deleteKey(keys, OS_ARCH_32BIT, callback)
+	return module.exports.deleteKey(keys, OS_ARCH_32BIT, callback)
 }
 
 module.exports.arch.deleteKey64 = function (keys, callback) {
-	module.exports.deleteKey(keys, OS_ARCH_64BIT, callback)
+	return module.exports.deleteKey(keys, OS_ARCH_64BIT, callback)
 }
 
 module.exports.arch.putValue = function (keys, callback) {
-	module.exports.putValue(keys, OS_ARCH_SPECIFIC, callback)
+	return module.exports.putValue(keys, OS_ARCH_SPECIFIC, callback)
 }
 
 module.exports.arch.putValue32 = function (keys, callback) {
-	module.exports.putValue(keys, OS_ARCH_32BIT, callback)
+	return module.exports.putValue(keys, OS_ARCH_32BIT, callback)
 }
 
 module.exports.arch.putValue64 = function (keys, callback) {
-	module.exports.putValue(keys, OS_ARCH_64BIT, callback)
+	return module.exports.putValue(keys, OS_ARCH_64BIT, callback)
 }
 
 
@@ -181,25 +209,52 @@ function execute(args, callback) {
 
 		// in case we have stuff in stderr but no real error
 		if (stderr) return callback(new Error(stderr))
-	
+		
 		debug(stdout)
 
-		var result
 		try {
-			result = JSON.parse(stdout)
+			callback(null, JSON.parse(stdout))
 		} catch (e) {
-			result = stdout
-		}
-
-		callback(null, result)
+			callback(e, stdout)
+		}		
 	})
 }
 
-function spawn(args) {
+function spawn (args) {
 
 	debug(args)
 
-	return childProcess.spawn('cscript.exe', args)
+	return childProcess.spawn('cscript.exe', args, { encoding: 'utf8' })
+}
+
+function handleErrorsAndClose (child, callback) {
+	var error
+	child.once('error', function(e) {
+		debug('process error %s', e)
+		error = e
+	})
+
+	child.once('close', function (code) {
+		debug('process exit with code %d', code)
+
+		if (error) {
+			if (error.code in errors) {
+				return callback(errors[err.code])
+			} else {
+				return callback(err)
+			}
+		}
+
+		if (code !== 0) {
+			if (code in errors) {
+				return callback(errors[code])
+			} else {
+				return callback(new Error('vbscript process reported unknown error code ' + code))
+			}
+		}
+
+		callback()
+	})
 }
 
 //TODO: move to helper.js?
@@ -240,5 +295,5 @@ function toCommandArgs(cmd, arch, keys) {
 
 //TODO: move to helper.js?
 function baseCommand(cmd, arch) {
-	return ['/Nologo', path.join(__dirname, 'vbs', cmd), arch]
+	return ['//Nologo', path.join(__dirname, 'vbs', cmd), arch]
 }
