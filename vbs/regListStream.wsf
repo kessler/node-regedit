@@ -19,7 +19,6 @@
 '	}
 <job id="listStream">
 	<script language="VBScript" src="util.vbs" />
-	<script language="VBScript" src="JsonSafeStream.vbs" />
 	<script language="VBScript" src="regUtil.vbs" />
 	<script language="VBScript">		
 		CheckZeroArgs("usage: cscript regList.wsf architecture")

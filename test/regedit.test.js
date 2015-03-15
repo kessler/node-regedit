@@ -114,6 +114,20 @@ describe('regedit', function () {
 			})
 		})
 
+		it.skip('reads unicode characters from the registry - need to manually create', function (done) {
+			var key = 'HKCU\\software\\ironsource\\'
+
+			index.list(key, function(err, result) {
+				
+				if (err) return done(err)
+				
+				result[key].should.have.property('keys')
+				result[key].keys.should.containEql('测试')
+
+				done()
+			})
+		})
+
 		it('will fail for unknown hives', function(done) {
 			index.list('lala\\software', function(err, result) {
 				should(err).not.be.null

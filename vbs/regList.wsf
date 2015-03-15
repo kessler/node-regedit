@@ -18,7 +18,6 @@
 '	}
 <job id="list">
 	<script language="VBScript" src="util.vbs" />
-	<script language="VBScript" src="JsonSafe.vbs" />
 	<script language="VBScript" src="regUtil.vbs" />
 	<script language="VBScript">		
 		CheckZeroArgs("usage: cscript regList.wsf architecture regpath1 [regpath2] ... [regpathN]")
@@ -30,7 +29,7 @@
 			if (v > 1) Then
 				Write ","
 			End If
-
+			
 			Write """" & JsonSafe(args(v)) & """: "
 			
 			ParseHiveAndSubKey args(v), constHive, strSubKey

@@ -114,22 +114,50 @@ Function GetOSArchitecture()
 	
 End Function
 
+Function JsonSafe(outStrText)
+	If outStrText = "" Then
+		JsonSafe = ""
+		Exit Function 
+	End If
+	
+	' different from normal JsonSafe, here we also escape the newline
+	' since it is used as separator when writing results to stdout
+
+	outStrText = Replace(outStrText, "\", "\\")
+	outStrText = Replace(outStrText, vbcrlf, "\\r\\n")	
+	outStrText = Replace(outStrText, """", "\""")	
+	outStrText = JsonU(outStrText)
+	JsonSafe = outStrText
+End Function
+
 'TODO: need to change this function's name to something more appropriate
 Function JsonU(astr)
-	Dim c 
-	Dim utftext 
-	utftext = ""
-	If isNull(astr) = false or astr <> "" Then
-		For n = 1 To Len(astr)
-			c = AscW(Mid(astr, n, 1))
-			If c < 128 And c > 0 Then
-				utftext = utftext & Mid(astr, n, 1)
-			ElseIf c > 128 And c <= 255 Then
-				utftext = utftext & "\x" & Hex(c)
-			Else
-				utftext = utftext & "\u" & Hex(c)
-			End If
-		Next
+	
+	If isNull(astr) Then
+		JsonU = ""
+		Exit Function
 	End If
+
+	Dim c 
+	Dim utftext: utftext = ""
+	
+	For n = 1 To Len(astr)
+		c = CLng(AscW(Mid(astr, n, 1)))
+
+		If c < 0 Then
+			c = &H10000 + c
+		End If
+
+		If c < &H80 Then
+			utftext = utftext & Mid(astr, n, 1)
+		ElseIf c < &H100 Then
+			utftext = utftext & "\u00" & Hex(c)
+		ElseIf c < &H1000 Then
+			utftext = utftext & "\u0" & Hex(c)
+		Else
+			utftext = utftext & "\u" & Hex(c)
+		End If
+	Next
+
 	JsonU = utftext
 End Function

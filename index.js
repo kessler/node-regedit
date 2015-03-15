@@ -210,14 +210,18 @@ function execute(args, callback) {
 		// in case we have stuff in stderr but no real error
 		if (stderr) return callback(new Error(stderr))
 		if (!stdout) return callback()
-		stdout = unescape(stdout)
+	
 		debug(stdout)
 
+		var result, err
 		try {
-			callback(null, JSON.parse(stdout))
+			result = JSON.parse(stdout)
 		} catch (e) {
-			callback(e, stdout)
-		}		
+			e.stdout = stdout
+			err = e	
+		}
+
+		callback(err, result)
 	})
 }
 

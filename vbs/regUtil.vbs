@@ -67,7 +67,7 @@ Sub ListChildrenAsJson(constHive, strSubKey)
 			If (x > 0) Then
 				Write ","
 			End If
-
+			'write arrKeyNames(x)
 			Write """" & JsonSafe(arrKeyNames(x)) & """"
 		Next		
 		Write "]"
