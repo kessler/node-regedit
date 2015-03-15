@@ -209,7 +209,8 @@ function execute(args, callback) {
 
 		// in case we have stuff in stderr but no real error
 		if (stderr) return callback(new Error(stderr))
-		
+		if (!stdout) return callback()
+		stdout = unescape(stdout)
 		debug(stdout)
 
 		try {

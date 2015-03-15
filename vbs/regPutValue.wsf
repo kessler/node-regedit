@@ -15,10 +15,8 @@
 
 		Do While Not stdin.AtEndOfLine
 			strLine = stdin.ReadLine()
-			strLine = trim(strLine)
+			strLine = unescape(trim(strLine))
 			
-			strLine = unescape(strLine)
-		
 			If IsNull(strLine) or strLine = "" Then
 				WScript.Quit 25127
 			End If
