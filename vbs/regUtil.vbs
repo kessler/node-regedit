@@ -55,19 +55,26 @@ End Function
 ' as json.
 Sub ListChildrenAsJson(constHive, strSubKey)
 
-	EnumKey constHive, strSubKey, arrKeyNames
-	EnumValues constHive, strSubKey, arrValueNames, arrValueTypes
+	Dim e1: e1 = EnumKey (constHive, strSubKey, arrKeyNames)
+	If e1 <> 0 Then
+		WScript.Quit e1
+	End If
+
+	Dim e2: e2 = EnumValues (constHive, strSubKey, arrValueNames, arrValueTypes)
+
+	If e2 <> 0 Then
+		WScript.Quit e2
+	End If
 
 	' start outputting json to stdout
 	Write "{"
-
 	If Not IsNull(arrKeyNames) Then
 		Write """keys"": ["
 		For x = 0 To UBound(arrKeyNames)
 			If (x > 0) Then
 				Write ","
 			End If
-			'write arrKeyNames(x)
+	
 			Write """" & JsonSafe(arrKeyNames(x)) & """"
 		Next		
 		Write "]"

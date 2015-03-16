@@ -54,13 +54,13 @@ Sub GetBinaryValue(constHive, strKey, strValueName, arrBinaryValue)
 	private_oReg.GetBinaryValue constHive, strKey, strValueName, arrBinaryValue
 End Sub
 
-Sub EnumKey(constHive, strSubKey, arrKeyNames)
-	private_oReg.EnumKey constHive, strSubKey, arrKeyNames
-End Sub
+Function EnumKey(constHive, strSubKey, arrKeyNames)
+	EnumKey = private_oReg.EnumKey(constHive, strSubKey, arrKeyNames)
+End Function
 
-Sub EnumValues(constHive, strSubKey, arrValueNames, arrValueTypes)
-	private_oReg.EnumValues constHive, strSubKey, arrValueNames, arrValueTypes
-End Sub
+Function EnumValues(constHive, strSubKey, arrValueNames, arrValueTypes)
+	EnumValues = private_oReg.EnumValues(constHive, strSubKey, arrValueNames, arrValueTypes)
+End Function
 
 Function CreateKey(constHive, strSubKey)
 	CreateKey = private_oReg.CreateKey(constHive, strSubKey)
