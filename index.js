@@ -57,22 +57,23 @@ module.exports.list = function (keys, architecture, callback) {
 			if (err) {
 				return outputStream.emit('error', err)
 			}
-		})
 
-		var args = baseCommand('regListStream.wsf', architecture)
-		var child = execFile(cscript.path(), args, { encoding: 'utf8' }, function(err) {
-			if (err) {
-				outputStream.emit('error', err)
-			}
-		})
-		
-		child.stderr.pipe(process.stderr)
+			var args = baseCommand('regListStream.wsf', architecture)
+			
+			var child = execFile(cscript.path(), args, { encoding: 'utf8' }, function(err) {
+				if (err) {
+					outputStream.emit('error', err)
+				}
+			})
+			
+			child.stderr.pipe(process.stderr)
 
-		var slicer = new StreamSlicer({ sliceBy: helper.WIN_EOL })
-		
-		child.stdout.pipe(slicer).pipe(outputStream)
-		
-		helper.writeArrayToStream(keys, child.stdin)
+			var slicer = new StreamSlicer({ sliceBy: helper.WIN_EOL })
+			
+			child.stdout.pipe(slicer).pipe(outputStream)
+			
+			helper.writeArrayToStream(keys, child.stdin)
+		})
 
 		return outputStream
 	}
