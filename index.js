@@ -7,6 +7,8 @@ var os = require('os')
 var StreamSlicer = require('stream-slicer')
 var through2 = require('through2')
 var helper = require('./lib/helper.js')
+var execFile = require('./lib/execFile.js')()
+var cscript = require('./lib/cscript.js')
 
 /*
  * 	Access the registry without using a specific os architecture, this means that on a 32bit process on a 64bit machine
@@ -49,17 +51,30 @@ module.exports.list = function (keys, architecture, callback) {
 	if (typeof callback === 'function') {		
 		execute(toCommandArgs('regList.wsf', architecture, keys), callback)
 	} else {
-		var child = spawn(baseCommand('regListStream.wsf', architecture))
+		var outputStream = through2.obj(helper.vbsOutputTransform)
+
+		cscript.init(function (err) {
+			if (err) {
+				return outputStream.emit('error', err)
+			}
+		})
+
+		var args = baseCommand('regListStream.wsf', architecture)
+		var child = execFile(cscript.path(), args, { encoding: 'utf8' }, function(err) {
+			if (err) {
+				outputStream.emit('error', err)
+			}
+		})
 		
 		child.stderr.pipe(process.stderr)
 
 		var slicer = new StreamSlicer({ sliceBy: helper.WIN_EOL })
 		
-		var stream = child.stdout.pipe(slicer).pipe(through2.obj(helper.vbsOutputTransform))
+		child.stdout.pipe(slicer).pipe(outputStream)
 		
 		helper.writeArrayToStream(keys, child.stdin)
 
-		return stream
+		return outputStream
 	}
 }
 
@@ -74,12 +89,8 @@ module.exports.createKey = function (keys, architecture, callback) {
 	}
 
 	var args = baseCommand('regCreateKey.wsf', architecture)
-	
-	var child = spawn(args)
 
-	handleErrorsAndClose(child, callback)	
-
-	helper.writeArrayToStream(keys, child.stdin)
+	spawnEx(args, keys, callback)
 }
 
 module.exports.deleteKey = function (keys, architecture, callback) {
@@ -94,10 +105,7 @@ module.exports.deleteKey = function (keys, architecture, callback) {
 
 	var args = baseCommand('regDeleteKey.wsf', architecture)
 
-	var child = spawn(args)
-	
-	handleErrorsAndClose(child, callback)	
-	helper.writeArrayToStream(keys, child.stdin)
+	spawnEx(args, keys, callback)
 }
 
 module.exports.putValue = function(map, architecture, callback) {
@@ -108,8 +116,6 @@ module.exports.putValue = function(map, architecture, callback) {
 
 	var args = baseCommand('regPutValue.wsf', architecture)
 
-	var child = spawn(args)
-	
 	var values = []
 	
 	for (var key in map) {		
@@ -126,8 +132,7 @@ module.exports.putValue = function(map, architecture, callback) {
 		}
 	}
 
-	handleErrorsAndClose(child, callback)
-	helper.writeArrayToStream(values, child.stdin)
+	spawnEx(args, values, callback)
 }
 
 module.exports.arch = {}
@@ -180,7 +185,6 @@ module.exports.arch.putValue64 = function (keys, callback) {
 	return module.exports.putValue(keys, OS_ARCH_64BIT, callback)
 }
 
-
 function execute(args, callback) {
 
 	if (typeof callback !== 'function') {
@@ -189,47 +193,57 @@ function execute(args, callback) {
 
 	debug(args)
 
-	childProcess.execFile('cscript.exe', args, function (err, stdout, stderr) {	
+	cscript.init(function (err) {
+		if (err) return callback(err)
 
-		if (err) {
-			if (stdout) {
-				console.log(stdout)
+		childProcess.execFile(cscript.path(), args, function (err, stdout, stderr) {	
+
+			if (err) {
+				if (stdout) {
+					console.log(stdout)
+				}
+
+				if (stderr) {
+					console.error(stderr)
+				}
+
+				if (err.code in errors) {
+					return callback(errors[err.code])
+				} else {
+					return callback(err)
+				}
 			}
 
-			if (stderr) {
-				console.error(stderr)
+			// in case we have stuff in stderr but no real error
+			if (stderr) return callback(new Error(stderr))
+			if (!stdout) return callback()
+		
+			debug(stdout)
+
+			var result, err
+			try {
+				result = JSON.parse(stdout)
+			} catch (e) {
+				e.stdout = stdout
+				err = e	
 			}
 
-			if (err.code in errors) {
-				return callback(errors[err.code])
-			} else {
-				return callback(err)
-			}
-		}
-
-		// in case we have stuff in stderr but no real error
-		if (stderr) return callback(new Error(stderr))
-		if (!stdout) return callback()
-	
-		debug(stdout)
-
-		var result, err
-		try {
-			result = JSON.parse(stdout)
-		} catch (e) {
-			e.stdout = stdout
-			err = e	
-		}
-
-		callback(err, result)
+			callback(err, result)
+		})
 	})
 }
 
-function spawn (args) {
+function spawnEx(args, keys, callback) {
+	cscript.init(function (err) {
+		if (err) return callback(err)
 
-	debug(args)
+		debug(args)
 
-	return childProcess.spawn('cscript.exe', args, { encoding: 'utf8' })
+		var child = execFile(cscript.path(), args, { encoding: 'utf8' })
+		
+		handleErrorsAndClose(child, callback)	
+		helper.writeArrayToStream(keys, child.stdin)
+	})
 }
 
 function handleErrorsAndClose (child, callback) {
@@ -246,7 +260,7 @@ function handleErrorsAndClose (child, callback) {
 			if (error.code in errors) {
 				return callback(errors[err.code])
 			} else {
-				return callback(err)
+				return callback(error)
 			}
 		}
 

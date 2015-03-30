@@ -11,15 +11,17 @@ describe('list', function () {
 		index.list(testKey, function (err, expectedResults) {
 
 			var actualResults = {}
-
+			var error
 			index.list(testKey)
-			.once('error', done)
+			.once('error', function(e) {
+				should(e).be.an.Error
+				error = e
+			})
 			.on('data', function(d) {
-				console.log(131232)
 				actualResults[d.key] = d.data				
 			}).once('finish', function () {
 				actualResults.should.eql(expectedResults)
-				done()
+				done(error)
 			})
 		})		
 	})
@@ -27,16 +29,19 @@ describe('list', function () {
 	it('works for multiple keys', function (done) {
 		var actualResults = {}
 		var keys = ['hklm', 'hkcu']
+		var error
 
 		// use non streaming interface to get expected results
 		index.list(keys, function (err, expectedResults) {
 			index.list(keys)
-			.once('error', done)
+			.once('error', function(e) {
+				error = e
+			})
 			.on('data', function(d) {
 				actualResults[d.key] = d.data				
 			}).once('finish', function () {
 				actualResults.should.eql(expectedResults)
-				done()
+				done(error)
 			})
 		})		
 	})

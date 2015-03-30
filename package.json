@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "debug": "^2.1.1",
+    "if-async": "^3.7.4",
     "stream-slicer": "0.0.6",
     "through2": "^0.6.3"
   },
