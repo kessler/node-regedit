@@ -1,6 +1,6 @@
 {
   "name": "regedit",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Read, Write, List and do all sorts of funky stuff to the windows registry using node.js and windows script host",
   "keywords": [
     "windows",
