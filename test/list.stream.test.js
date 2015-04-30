@@ -45,4 +45,46 @@ describe('list', function () {
 			})
 		})		
 	})
+
+	describe.only('benchmark test', function (done) {
+		var testSize = 10000
+		var staticBaseKey = 'HKCU\\software\\ironSource\\test\\bench\\'
+
+		var baseKey, keys
+
+		it('test', function (done) {
+
+			index.list(baseKey, function (err, result) {
+				if (err) return done(err)
+				console.log(result)
+				done()
+			})
+		})
+
+		beforeEach(function (done) {
+			
+			baseKey = staticBaseKey + Date.now()
+
+			// clear remains of previous tests
+			index.deleteKey(staticBaseKey, function (err) {
+				if (err) {
+					console.log(err)
+					console.log('this might be ok.')
+				}
+
+				// create N keys for the test
+				keys = []
+
+				for (var i = 0; i < testSize; i++) {
+					keys.push(baseKey + '\\' + i)
+				}
+
+				index.createKey(keys, function(err, result) {
+					if (err) return done(err)
+
+					done()
+				})
+			})			
+		})
+	})
 })
