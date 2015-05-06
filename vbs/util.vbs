@@ -119,12 +119,11 @@ Function JsonSafe(outStrText)
 		JsonSafe = ""
 		Exit Function 
 	End If
-	
-	' different from normal JsonSafe, here we also escape the newline
-	' since it is used as separator when writing results to stdout
-
+		
 	outStrText = Replace(outStrText, "\", "\\")
-	outStrText = Replace(outStrText, vbcrlf, "\\r\\n")	
+	outStrText = Replace(outStrText, vbcrlf, "\\r\\n")
+	outStrText = Replace(outStrText, vblf, "\\n")
+	outStrText = Replace(outStrText, vbcr, "\\r")
 	outStrText = Replace(outStrText, """", "\""")	
 	outStrText = JsonU(outStrText)
 	JsonSafe = outStrText
