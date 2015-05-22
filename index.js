@@ -48,7 +48,7 @@ module.exports.list = function (keys, architecture, callback) {
 		keys = [keys]
 	}
 
-	if (typeof callback === 'function') {		
+	if (typeof callback === 'function') {	
 		execute(toCommandArgs('regList.wsf', architecture, keys), callback)
 	} else {
 		var outputStream = through2.obj(helper.vbsOutputTransform)
@@ -119,7 +119,7 @@ module.exports.putValue = function(map, architecture, callback) {
 
 	var values = []
 	
-	for (var key in map) {		
+	for (var key in map) {
 		var keyValues = map[key]
 
 		for (var valueName in keyValues) {
@@ -242,7 +242,7 @@ function spawnEx(args, keys, callback) {
 
 		var child = execFile(cscript.path(), args, { encoding: 'utf8' })
 		
-		handleErrorsAndClose(child, callback)	
+		handleErrorsAndClose(child, callback)
 		helper.writeArrayToStream(keys, child.stdin)
 	})
 }
@@ -302,9 +302,9 @@ function renderValueByType(value, type) {
 //TODO: move to helper.js?
 function toCommandArgs(cmd, arch, keys) {
 	var result = baseCommand(cmd, arch)
-	if (typeof keys === 'string') {		
+	if (typeof keys === 'string') {
 		result.push(keys)
-	} else if (util.isArray(keys)) {		
+	} else if (util.isArray(keys)) {
 		result = result.concat(keys)
 	} else {
 		debug('creating command without using keys %s', keys ? keys : '')		
