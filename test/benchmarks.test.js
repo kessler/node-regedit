@@ -1,7 +1,7 @@
 var should = require('should')
 var index = require('../index')
 
-describe('benchmark test', function (done) {
+describe.skip('benchmark test', function (done) {
 	this.timeout(40000)
 
 	var testSize = 10000
@@ -9,7 +9,7 @@ describe('benchmark test', function (done) {
 
 	var baseKey, keys
 
-	it.only('create', function (done) {
+	it('create', function (done) {
 		
 		console.time('start create')
 		index.createKey(keys, function(err, result) {

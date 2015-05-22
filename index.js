@@ -118,7 +118,7 @@ module.exports.putValue = function(map, architecture, callback) {
 	var args = baseCommand('regPutValue.wsf', architecture)
 
 	var values = []
-	
+
 	for (var key in map) {
 		var keyValues = map[key]
 
@@ -243,6 +243,7 @@ function spawnEx(args, keys, callback) {
 		var child = execFile(cscript.path(), args, { encoding: 'utf8' })
 		
 		handleErrorsAndClose(child, callback)
+
 		helper.writeArrayToStream(keys, child.stdin)
 	})
 }
@@ -294,6 +295,12 @@ function renderValueByType(value, type) {
 			}
 			return value.join(',')
 
+		case 'REG_SZ':
+			if (value === '') {
+				return '\0'
+			}
+			return value
+
 		default:
 			return value
 	}
@@ -307,7 +314,7 @@ function toCommandArgs(cmd, arch, keys) {
 	} else if (util.isArray(keys)) {
 		result = result.concat(keys)
 	} else {
-		debug('creating command without using keys %s', keys ? keys : '')		
+		debug('creating command without using keys %s', keys ? keys : '')
 	}
 
 	return result
