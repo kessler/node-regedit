@@ -96,6 +96,8 @@ For now this is how its going to be, but in the future this will probably change
 ### regedit.list([String|Array]) - streaming interface
 Same as **regedit.list([String|Array], [Function])** exposes a streaming interface instead of a callback. This is useful for situations where you have a lot of data coming in and out of the list process. Eventually this will completely replace the list() with callback api
 
+**This operation will mutate the keys array**
+
 Example:
 ```javascript
 regedit.list(['HKCU\\SOFTWARE', 'HKLM\\SOFTWARE'])
@@ -154,9 +156,11 @@ streaming interface, see *regedit.list([String|Array])*
 ## Manipulating the registry
 ### regedit.createKey([String|Array], [Function])
 Creates one or more keys in the registry
+**This operation will mutate the keys array**
 
 ### regedit.deleteKey([String|Array], [Function])
 Deletes one or more keys in the registry
+**This operation will mutate the keys array**
 
 ### regedit.putValue(Object, Function)
 Put one or more values in the registry. The Object given to this function is almost identical to the result of regedit.list(). 
