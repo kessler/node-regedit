@@ -30,6 +30,7 @@
   "homepage": "https://github.com/ironSource/node-regedit",
   "license": "MIT",
   "devDependencies": {
+    "mocha": "^2.3.4",
     "should": "^4.4.2"
   }
 }
