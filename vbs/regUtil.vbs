@@ -40,7 +40,7 @@ Function PutValue(constHive, strSubKey, strValueName, strValue, strType)
 			PutValue = SetMultiStringValue(constHive, strSubKey, strValueName, Split(strValue, ","))
 
 		Case "REG_QWORD"
-			PutValue = SetQWORDValue(constHive, strSubKey, strValueName, CInt(strValue))
+			PutValue = SetQWORDValue(constHive, strSubKey, strValueName, strValue)
 
 		Case "REG_DEFAULT"
 			PutValue = SetStringValue(constHive, strSubKey, "", strValue)

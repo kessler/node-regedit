@@ -38,8 +38,8 @@ Sub GetDWORDValue(constHive, strKey, strValueName, intDWordValue)
 	private_oReg.GetDWORDValue constHive, strKey, strValueName, intDWordValue
 End Sub
 
-Function SetQWORDValue(constHive, strSubKey, strValueName, arrValue)
-	SetQWORDValue = private_oReg.SetQWORDValue(constHive, strSubKey, strValueName, arrValue)
+Function SetQWORDValue(constHive, strSubKey, strValueName, strQWordValue)
+	SetQWORDValue = private_oReg.SetQWORDValue(constHive, strSubKey, strValueName, strQWordValue)
 End Function
 
 Sub GetQWORDValue(constHive, strKey, strValueName, intQWordValue)
