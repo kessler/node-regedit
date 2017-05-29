@@ -34,13 +34,13 @@ Function PutValue(constHive, strSubKey, strValueName, strValue, strType)
 
 		' TODO: need to check that indeed int is the right type here
 		Case "REG_DWORD"
-			PutValue = SetDWORDValue(constHive, strSubKey, strValueName, CInt(strValue))
+			PutValue = SetDWORDValue(constHive, strSubKey, strValueName, CDbl(strValue))
 
 		Case "REG_MULTI_SZ"
 			PutValue = SetMultiStringValue(constHive, strSubKey, strValueName, Split(strValue, ","))
 
 		Case "REG_QWORD"
-			PutValue = SetQWORDValue(constHive, strSubKey, strValueName, CInt(strValue))
+			PutValue = SetQWORDValue(constHive, strSubKey, strValueName, strValue)
 
 		Case "REG_DEFAULT"
 			PutValue = SetStringValue(constHive, strSubKey, "", strValue)
@@ -260,6 +260,10 @@ Sub GetValueByType(constHive, strKey, strValueName, intType, outVarValue)
 		' REG_DWORD
 		Case 4
 			GetDWORDValue constHive, strKey, strValueName, outVarValue
+
+			' #21 - VBS does not support UInt32. This is the workaround
+			If outVarValue < 0 Then outVarValue = 4294967296 + outVarValue
+
 			Exit Sub
 			
 		' REG_MULYI_SZ'

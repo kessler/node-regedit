@@ -35,6 +35,57 @@ describe('regedit', function () {
 	
 	})
 
+	it('can putValue REG_DWORD > 0x7fffffff #21', function (done) {
+		index.createKey(key, function (err) {
+			if (err) return done(err)
+
+			var values = {}
+
+			values[key] = { 'valName': { value: 0x80000000, type: 'REG_DWORD' }}
+
+			index.putValue(values, function (err) {
+				if (err) return done(err)
+
+				index.list(key, function (err, results) {
+					if (err) return done(err)
+
+					results.should.have.property(key)
+					.which.have.property('values')
+					.which.have.property('valName')
+					.which.have.property('value', 0x80000000)
+
+					done()
+				})
+			})
+		})
+	})
+
+	it('can putValue REG_QWORD < 9007199254740993 #21', function (done) {
+		index.createKey(key, function (err) {
+			if (err) return done(err)
+
+			var values = {}
+
+			values[key] = { 'valName': { value: 9007199254740993, type: 'REG_QWORD' }}
+
+			index.putValue(values, function (err) {
+				if (err) return done(err)
+
+				index.list(key, function (err, results) {
+					if (err) return done(err)
+
+					results.should.have.property(key)
+					.which.have.property('values')
+					.which.have.property('valName')
+					.which.have.property('value', 9007199254740992)
+
+					done()
+				})
+
+			})
+		})
+	})
+
 	beforeEach(function () {
 		key = baseKey + Date.now()
 	})
