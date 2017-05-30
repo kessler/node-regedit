@@ -75,7 +75,7 @@
         "no-labels": "error",
         "no-lone-blocks": "warn",
         "no-loop-func": "error",
-        "no-magic-numbers": "warn",
+        "no-magic-numbers": "off",
         "no-multi-spaces": "warn",
         "no-multi-str": "error",
         "no-new-func": "error",
@@ -100,9 +100,9 @@
         "no-void": "error",
         "no-warning-comments": "warn",
         "no-with": "error",
-        "radix": "error",
+        "radix": "warn",
         "require-await": "error",
-        "vars-on-top": "error",
+        "vars-on-top": "off",
         "wrap-iife": "error",
         "yoda": "error",
         "no-catch-shadow": "error",
@@ -164,7 +164,7 @@
             "always"
         ],
         "func-names": [
-            "error",
+            "off",
             "as-needed"
         ],
         "func-style": [
@@ -209,7 +209,7 @@
         ],
         "max-nested-callbacks": [
             "error",
-            4
+            8
         ],
         "max-params": [
             "error",
