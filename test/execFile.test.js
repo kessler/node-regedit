@@ -1,3 +1,5 @@
+/* eslint-disable max-len, no-unused-expressions */
+
 var should = require('should')
 var execFile = require('../lib/execFile.js')
 var path = require('path')

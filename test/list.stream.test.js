@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-expressions */
+
 var should = require('should')
 var index = require('../index')
 

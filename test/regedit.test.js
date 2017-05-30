@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-expressions */
+
 // TODO need to find a better way to test the 32bit/64bit specific scenarios
 
 var index = require('../index')
