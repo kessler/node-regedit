@@ -205,7 +205,7 @@
         ],
         "max-len": [
             "error",
-            120
+            140
         ],
         "max-nested-callbacks": [
             "error",
