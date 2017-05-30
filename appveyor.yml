@@ -25,7 +25,7 @@ before_build:
   - npm --version
 
 build_script:
-  - npm run dist
+  - npm test
 
 cache:
   - node_modules -> package.json
