@@ -273,7 +273,7 @@ function handleErrorsAndClose (child, callback) {
 
         if (error) {
             if (error.code in errors) {
-                return callback(errors[err.code])
+                return callback(errors[error.code])
             } 
             return callback(error)
 			
