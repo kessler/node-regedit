@@ -5,6 +5,10 @@
 var index = require('../index')
 var should = require('should')
 
+function toLowerCase (str) {
+    return str.toLowerCase()
+}
+
 describe('regedit', function () {
     describe('list keys and values in a sub key', function () {
         var target = 'HKLM\\software\\microsoft\\windows\\CurrentVersion'
@@ -21,7 +25,8 @@ describe('regedit', function () {
 			
                 key.should.have.property('keys')
                 key.should.have.property('values')
-                key.keys.should.containEql('Policies')
+                key.keys.map(toLowerCase).should.containEql('policies')
+
                 key.values.should.have.property('ProgramFilesDir')
                 key.values.ProgramFilesDir.should.have.property('value')
                 key.values.ProgramFilesDir.value.indexOf('C:\\Program Files').should.eql(0)
@@ -43,7 +48,8 @@ describe('regedit', function () {
 			
                 key.should.have.property('keys')
                 key.should.have.property('values')
-                key.keys.should.containEql('Policies')
+                key.keys.map(toLowerCase).should.containEql('policies')
+                
                 key.values.should.have.property('ProgramFilesDir')
                 key.values.ProgramFilesDir.should.have.property('value')
                 key.values.ProgramFilesDir.value.indexOf('C:\\Program Files').should.eql(0)
@@ -65,7 +71,8 @@ describe('regedit', function () {
 			
                 key.should.have.property('keys')
                 key.should.have.property('values')
-                key.keys.should.containEql('Policies')
+                key.keys.map(toLowerCase).should.containEql('policies')
+
                 key.values.should.have.property('ProgramFilesDir')
                 key.values.ProgramFilesDir.should.have.property('value', 'C:\\Program Files')
                 key.values.ProgramFilesDir.should.have.property('type', 'REG_SZ')
@@ -86,7 +93,8 @@ describe('regedit', function () {
 			
                 key.should.have.property('keys')
                 key.should.have.property('values')
-                key.keys.should.containEql('Policies')
+                key.keys.map(toLowerCase).should.containEql('policies')
+                
                 key.values.should.have.property('ProgramFilesDir')
                 key.values.ProgramFilesDir.should.have.property('value', 'C:\\Program Files')
                 key.values.ProgramFilesDir.should.have.property('type', 'REG_SZ')
@@ -103,11 +111,11 @@ describe('regedit', function () {
 
                 result.should.have.property('hklm')
                 result.hklm.should.have.property('keys')
-                result.hklm.keys.should.containEql('SOFTWARE')
+                result.hklm.keys.map(toLowerCase).should.containEql('software')
 
                 result.should.have.property('hkcu')
                 result.hkcu.should.have.property('keys')
-                result.hkcu.keys.should.containEql('Software')
+                result.hkcu.keys.map(toLowerCase).should.containEql('software')
 
                 done()
             })
@@ -118,9 +126,9 @@ describe('regedit', function () {
 			
             index.list([key], function(err, result) {
                 result[key].should.have.property('keys')
-                result[key].keys.should.containEql('Preload')
-                result[key].keys.should.containEql('Substitutes')
-                result[key].keys.should.containEql('Toggle')
+                result[key].keys.map(toLowerCase).should.containEql('preload')
+                result[key].keys.map(toLowerCase).should.containEql('substitutes')
+                result[key].keys.map(toLowerCase).should.containEql('toggle')
 				
                 done()
             })
