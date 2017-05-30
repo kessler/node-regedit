@@ -97,17 +97,29 @@ describe('regedit', function () {
 
         it('can be applied to several independant keys at once', function (done) {
             index.list(['hklm', 'hkcu'], function (err, result) {
+                var keys
+
                 if (err) {
                     return done(err)
                 }
 
                 result.should.have.property('hklm')
                 result.hklm.should.have.property('keys')
-                result.hklm.keys.should.containEql('SOFTWARE')
+
+                keys = result.hklm.keys.map(function (key) {
+                    return key.toLowerCase()
+                })
+
+                keys.should.containEql('software')
 
                 result.should.have.property('hkcu')
                 result.hkcu.should.have.property('keys')
-                result.hkcu.keys.should.containEql('Software')
+                
+                keys = result.hkcu.keys.map(function (key) {
+                    return key.toLowerCase()
+                })
+
+                keys.should.containEql('software')
 
                 done()
             })
