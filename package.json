@@ -8,6 +8,7 @@
   ],
   "main": "index.js",
   "scripts": {
+    "dist": "npm test",
     "test": "mocha -R spec"
   },
   "dependencies": {
