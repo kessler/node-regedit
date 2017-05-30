@@ -10,7 +10,7 @@ environment:
       configuration: "publish"
 
 matrix:
-  fast_finish: true
+  fast_finish: false
 
 platform:
   - x86
