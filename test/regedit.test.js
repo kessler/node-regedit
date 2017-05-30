@@ -5,6 +5,10 @@
 var index = require('../index')
 var should = require('should')
 
+function toLowerCase (str) {
+    return str.toLowerCase()
+}
+
 describe('regedit', function () {
     describe('list keys and values in a sub key', function () {
         var target = 'HKLM\\software\\microsoft\\windows\\CurrentVersion'
