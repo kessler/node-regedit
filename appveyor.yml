@@ -25,6 +25,7 @@ before_build:
   - npm --version
 
 build_script:
+  - npm run lint:src
   - npm test
 
 cache:
