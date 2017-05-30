@@ -25,7 +25,8 @@ describe('regedit', function () {
 			
                 key.should.have.property('keys')
                 key.should.have.property('values')
-                key.keys.should.containEql('Policies')
+                key.keys.map(toLowerCase).should.containEql('policies')
+
                 key.values.should.have.property('ProgramFilesDir')
                 key.values.ProgramFilesDir.should.have.property('value')
                 key.values.ProgramFilesDir.value.indexOf('C:\\Program Files').should.eql(0)
@@ -47,7 +48,8 @@ describe('regedit', function () {
 			
                 key.should.have.property('keys')
                 key.should.have.property('values')
-                key.keys.should.containEql('Policies')
+                key.keys.map(toLowerCase).should.containEql('policies')
+                
                 key.values.should.have.property('ProgramFilesDir')
                 key.values.ProgramFilesDir.should.have.property('value')
                 key.values.ProgramFilesDir.value.indexOf('C:\\Program Files').should.eql(0)
@@ -69,7 +71,8 @@ describe('regedit', function () {
 			
                 key.should.have.property('keys')
                 key.should.have.property('values')
-                key.keys.should.containEql('Policies')
+                key.keys.map(toLowerCase).should.containEql('policies')
+
                 key.values.should.have.property('ProgramFilesDir')
                 key.values.ProgramFilesDir.should.have.property('value', 'C:\\Program Files')
                 key.values.ProgramFilesDir.should.have.property('type', 'REG_SZ')
@@ -90,7 +93,8 @@ describe('regedit', function () {
 			
                 key.should.have.property('keys')
                 key.should.have.property('values')
-                key.keys.should.containEql('Policies')
+                key.keys.map(toLowerCase).should.containEql('policies')
+                
                 key.values.should.have.property('ProgramFilesDir')
                 key.values.ProgramFilesDir.should.have.property('value', 'C:\\Program Files')
                 key.values.ProgramFilesDir.should.have.property('type', 'REG_SZ')
@@ -122,9 +126,9 @@ describe('regedit', function () {
 			
             index.list([key], function(err, result) {
                 result[key].should.have.property('keys')
-                result[key].keys.should.containEql('Preload')
-                result[key].keys.should.containEql('Substitutes')
-                result[key].keys.should.containEql('Toggle')
+                result[key].keys.map(toLowerCase).should.containEql('preload')
+                result[key].keys.map(toLowerCase).should.containEql('substitutes')
+                result[key].keys.map(toLowerCase).should.containEql('toggle')
 				
                 done()
             })
