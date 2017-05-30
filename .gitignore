@@ -23,6 +23,7 @@ node_modules
 
 # rc config files
 .*rc
+!.eslintrc
 
 # see https://github.com/substack/browserify-handbook#organizing-modules
 node_modules/*

@@ -8,7 +8,9 @@
   ],
   "main": "index.js",
   "scripts": {
-    "dist": "npm test",
+    "lint": "eslint . --fix",
+    "lint:src": "eslint . --fix --ignore-pattern test/",
+    "lint:test": "eslint test --fix",
     "test": "mocha -R spec"
   },
   "dependencies": {
@@ -31,6 +33,7 @@
   "homepage": "https://github.com/ironSource/node-regedit",
   "license": "MIT",
   "devDependencies": {
+    "eslint": "^3.19.0",
     "mocha": "^2.3.4",
     "should": "^4.4.2"
   }
