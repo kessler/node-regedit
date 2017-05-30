@@ -229,7 +229,9 @@ function execute(args, callback) {
 		
             debug(stdout)
 
-            var result, err
+            var result
+            err = null
+
             try {
                 result = JSON.parse(stdout)
             }
