@@ -9,7 +9,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint . --fix",
-    "lint:src": "eslint lib --fix",
+    "lint:src": "eslint . --fix --ignore-pattern test/",
     "lint:test": "eslint test --fix",
     "test": "mocha -R spec"
   },
