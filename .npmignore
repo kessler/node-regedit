@@ -22,3 +22,6 @@ coverage
 # see https://github.com/substack/browserify-handbook#organizing-modules
 node_modules/*
 !node_modules/app
+
+# Appveyor
+appveyor.yml
