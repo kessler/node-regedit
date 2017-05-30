@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+
 var errors = {}
 
 errors[25121] = new Error('missing arguments')

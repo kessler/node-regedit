@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+
 var fs = require('fs')
 var START_MARKER = '// *** generated errors ***//'
 var END_MARKER = '// *** end generated errors ***//'

@@ -1,3 +1,6 @@
+/* global errors */
+/* eslint-disable max-len */
+
 var e0 = new Error('wbemErrFailed')
 e0.description = 'The call failed.'
 e0.code = 2147749889
