@@ -8,6 +8,7 @@
   ],
   "main": "index.js",
   "scripts": {
+    "lint": "echo lint stub",
     "test": "mocha -R spec"
   },
   "dependencies": {
