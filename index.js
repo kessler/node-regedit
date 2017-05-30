@@ -36,291 +36,304 @@ var OS_ARCH_64BIT = '64'
 module.exports.list = function (keys, architecture, callback) {
 	//console.log('list with callback will be deprecated in future versions, use list streaming interface')
 
-	if (architecture === undefined) {
-		callback = undefined
-		architecture = OS_ARCH_AGNOSTIC
-	} else if (typeof architecture === 'function') {
-		callback = architecture
-		architecture = OS_ARCH_AGNOSTIC
-	}
+    if (architecture === undefined) {
+        callback = undefined
+        architecture = OS_ARCH_AGNOSTIC
+    }
+    else if (typeof architecture === 'function') {
+        callback = architecture
+        architecture = OS_ARCH_AGNOSTIC
+    }
 
-	if (typeof keys === 'string') {
-		keys = [keys]
-	}
+    if (typeof keys === 'string') {
+        keys = [keys]
+    }
 
-	if (typeof callback === 'function') {	
-		execute(toCommandArgs('regList.wsf', architecture, keys), callback)
-	} else {
-		var outputStream = through2.obj(helper.vbsOutputTransform)
+    if (typeof callback === 'function') {	
+        execute(toCommandArgs('regList.wsf', architecture, keys), callback)
+    }
+    else {
+        var outputStream = through2.obj(helper.vbsOutputTransform)
 
-		cscript.init(function (err) {
-			if (err) {
-				return outputStream.emit('error', err)
-			}
+        cscript.init(function (err) {
+            if (err) {
+                return outputStream.emit('error', err)
+            }
 
-			var args = baseCommand('regListStream.wsf', architecture)
+            var args = baseCommand('regListStream.wsf', architecture)
 			
-			var child = execFile(cscript.path(), args, { encoding: 'utf8' }, function(err) {
-				if (err) {
-					outputStream.emit('error', err)
-				}
-			})
+            var child = execFile(cscript.path(), args, {encoding: 'utf8'}, function(err) {
+                if (err) {
+                    outputStream.emit('error', err)
+                }
+            })
 			
-			child.stderr.pipe(process.stderr)
+            child.stderr.pipe(process.stderr)
 
-			var slicer = new StreamSlicer({ sliceBy: helper.WIN_EOL })
+            var slicer = new StreamSlicer({sliceBy: helper.WIN_EOL})
 			
-			child.stdout.pipe(slicer).pipe(outputStream)
+            child.stdout.pipe(slicer).pipe(outputStream)
 			
-			helper.writeArrayToStream(keys, child.stdin)
-		})
+            helper.writeArrayToStream(keys, child.stdin)
+        })
 
-		return outputStream
-	}
+        return outputStream
+    }
 }
 
 module.exports.createKey = function (keys, architecture, callback) {
-	if (typeof architecture === 'function') {
-		callback = architecture
-		architecture = OS_ARCH_AGNOSTIC
-	}
+    if (typeof architecture === 'function') {
+        callback = architecture
+        architecture = OS_ARCH_AGNOSTIC
+    }
 
-	if (typeof keys === 'string') {
-		keys = [keys]
-	}
+    if (typeof keys === 'string') {
+        keys = [keys]
+    }
 
-	var args = baseCommand('regCreateKey.wsf', architecture)
+    var args = baseCommand('regCreateKey.wsf', architecture)
 
-	spawnEx(args, keys, callback)
+    spawnEx(args, keys, callback)
 }
 
 module.exports.deleteKey = function (keys, architecture, callback) {
-	if (typeof architecture === 'function') {
-		callback = architecture
-		architecture = OS_ARCH_AGNOSTIC
-	}
+    if (typeof architecture === 'function') {
+        callback = architecture
+        architecture = OS_ARCH_AGNOSTIC
+    }
 
-	if (typeof keys === 'string') {
-		keys = [keys]
-	}
+    if (typeof keys === 'string') {
+        keys = [keys]
+    }
 
-	var args = baseCommand('regDeleteKey.wsf', architecture)
+    var args = baseCommand('regDeleteKey.wsf', architecture)
 
-	spawnEx(args, keys, callback)
+    spawnEx(args, keys, callback)
 }
 
 module.exports.putValue = function(map, architecture, callback) {
-	if (typeof architecture === 'function') {
-		callback = architecture
-		architecture = OS_ARCH_AGNOSTIC
-	}
+    if (typeof architecture === 'function') {
+        callback = architecture
+        architecture = OS_ARCH_AGNOSTIC
+    }
 
-	var args = baseCommand('regPutValue.wsf', architecture)
+    var args = baseCommand('regPutValue.wsf', architecture)
 
-	var values = []
+    var values = []
 
-	for (var key in map) {
-		var keyValues = map[key]
+    for (var key in map) {
+        var keyValues = map[key]
 
-		for (var valueName in keyValues) {
-			var entry = keyValues[valueName]
+        for (var valueName in keyValues) {
+            var entry = keyValues[valueName]
 			
 			// helper writes the array to the stream in reversed order
-			values.push(entry.type)
-			values.push(renderValueByType(entry.value, entry.type))
-			values.push(valueName)
-			values.push(key)
-		}
-	}
+            values.push(entry.type)
+            values.push(renderValueByType(entry.value, entry.type))
+            values.push(valueName)
+            values.push(key)
+        }
+    }
 
-	spawnEx(args, values, callback)
+    spawnEx(args, values, callback)
 }
 
 module.exports.arch = {}
 
 module.exports.arch.list = function(keys, callback) {
-	return module.exports.list(keys, OS_ARCH_SPECIFIC, callback)	
+    return module.exports.list(keys, OS_ARCH_SPECIFIC, callback)	
 }
 
 module.exports.arch.list32 = function (keys, callback) {
-	return module.exports.list(keys, OS_ARCH_32BIT, callback)
+    return module.exports.list(keys, OS_ARCH_32BIT, callback)
 }
 
 module.exports.arch.list64 = function (keys, callback) {
-	return module.exports.list(keys, OS_ARCH_64BIT, callback)	
+    return module.exports.list(keys, OS_ARCH_64BIT, callback)	
 }
 
 module.exports.arch.createKey = function (keys, callback) {
-	return module.exports.createKey(keys, OS_ARCH_SPECIFIC, callback)
+    return module.exports.createKey(keys, OS_ARCH_SPECIFIC, callback)
 }
 
 module.exports.arch.createKey32 = function (keys, callback) {
-	return module.exports.createKey(keys, OS_ARCH_32BIT, callback)
+    return module.exports.createKey(keys, OS_ARCH_32BIT, callback)
 }
 
 module.exports.arch.createKey64 = function (keys, callback) {
-	return module.exports.createKey(keys, OS_ARCH_64BIT, callback)
+    return module.exports.createKey(keys, OS_ARCH_64BIT, callback)
 }
 
 module.exports.arch.deleteKey = function (keys, callback) {
-	return module.exports.deleteKey(keys, OS_ARCH_SPECIFIC, callback)
+    return module.exports.deleteKey(keys, OS_ARCH_SPECIFIC, callback)
 }
 
 module.exports.arch.deleteKey32 = function (keys, callback) {
-	return module.exports.deleteKey(keys, OS_ARCH_32BIT, callback)
+    return module.exports.deleteKey(keys, OS_ARCH_32BIT, callback)
 }
 
 module.exports.arch.deleteKey64 = function (keys, callback) {
-	return module.exports.deleteKey(keys, OS_ARCH_64BIT, callback)
+    return module.exports.deleteKey(keys, OS_ARCH_64BIT, callback)
 }
 
 module.exports.arch.putValue = function (keys, callback) {
-	return module.exports.putValue(keys, OS_ARCH_SPECIFIC, callback)
+    return module.exports.putValue(keys, OS_ARCH_SPECIFIC, callback)
 }
 
 module.exports.arch.putValue32 = function (keys, callback) {
-	return module.exports.putValue(keys, OS_ARCH_32BIT, callback)
+    return module.exports.putValue(keys, OS_ARCH_32BIT, callback)
 }
 
 module.exports.arch.putValue64 = function (keys, callback) {
-	return module.exports.putValue(keys, OS_ARCH_64BIT, callback)
+    return module.exports.putValue(keys, OS_ARCH_64BIT, callback)
 }
 
 function execute(args, callback) {
 
-	if (typeof callback !== 'function') {
-		throw new Error('missing callback')
-	}
+    if (typeof callback !== 'function') {
+        throw new Error('missing callback')
+    }
 
-	debug(args)
+    debug(args)
 
-	cscript.init(function (err) {
-		if (err) return callback(err)
+    cscript.init(function (err) {
+        if (err) {
+            return callback(err)
+        }
 
-		childProcess.execFile(cscript.path(), args, function (err, stdout, stderr) {	
+        childProcess.execFile(cscript.path(), args, function (err, stdout, stderr) {	
 
-			if (err) {
-				if (stdout) {
-					console.log(stdout)
-				}
+            if (err) {
+                if (stdout) {
+                    console.log(stdout)
+                }
 
-				if (stderr) {
-					console.error(stderr)
-				}
+                if (stderr) {
+                    console.error(stderr)
+                }
 
-				if (err.code in errors) {
-					return callback(errors[err.code])
-				} else {
-					return callback(err)
-				}
-			}
+                if (err.code in errors) {
+                    return callback(errors[err.code])
+                } 
+                return callback(err)
+				
+            }
 
 			// in case we have stuff in stderr but no real error
-			if (stderr) return callback(new Error(stderr))
-			if (!stdout) return callback()
+            if (stderr) {
+                return callback(new Error(stderr))
+            }
+            if (!stdout) {
+                return callback() 
+            }
 		
-			debug(stdout)
+            debug(stdout)
 
-			var result, err
-			try {
-				result = JSON.parse(stdout)
-			} catch (e) {
-				e.stdout = stdout
-				err = e	
-			}
+            var result, err
+            try {
+                result = JSON.parse(stdout)
+            }
+            catch (e) {
+                e.stdout = stdout
+                err = e	
+            }
 
-			callback(err, result)
-		})
-	})
+            callback(err, result)
+        })
+    })
 }
 
 function spawnEx(args, keys, callback) {
-	cscript.init(function (err) {
-		if (err) return callback(err)
+    cscript.init(function (err) {
+        if (err) {
+            return callback(err)
+        }
 
-		debug(args)
+        debug(args)
 
-		var child = execFile(cscript.path(), args, { encoding: 'utf8' })
+        var child = execFile(cscript.path(), args, {encoding: 'utf8'})
 		
-		handleErrorsAndClose(child, callback)
+        handleErrorsAndClose(child, callback)
 
-		helper.writeArrayToStream(keys, child.stdin)
-	})
+        helper.writeArrayToStream(keys, child.stdin)
+    })
 }
 
 function handleErrorsAndClose (child, callback) {
-	var error
-	child.once('error', function(e) {
-		debug('process error %s', e)
-		error = e
-	})
+    var error
+    child.once('error', function(e) {
+        debug('process error %s', e)
+        error = e
+    })
 
-	child.once('close', function (code) {
-		debug('process exit with code %d', code)
+    child.once('close', function (code) {
+        debug('process exit with code %d', code)
 
-		if (error) {
-			if (error.code in errors) {
-				return callback(errors[err.code])
-			} else {
-				return callback(error)
-			}
-		}
+        if (error) {
+            if (error.code in errors) {
+                return callback(errors[err.code])
+            } 
+            return callback(error)
+			
+        }
 
-		if (code !== 0) {
-			if (code in errors) {
-				return callback(errors[code])
-			} else {
-				return callback(new Error('vbscript process reported unknown error code ' + code))
-			}
-		}
+        if (code !== 0) {
+            if (code in errors) {
+                return callback(errors[code])
+            } 
+            return callback(new Error('vbscript process reported unknown error code ' + code))
+			
+        }
 
-		callback()
-	})
+        callback()
+    })
 }
 
 //TODO: move to helper.js?
 function renderValueByType(value, type) {
-	type = type.toUpperCase()
+    type = type.toUpperCase()
 
-	switch (type) {
-		case 'REG_BINARY':
-			if (!util.isArray(value)) {
-				throw new Error('invalid value type ' + typeof (value) + ' for registry type REG_BINARY, please use an array of numbers')
-			}
-			return value.join(',')
+    switch (type) {
+        case 'REG_BINARY':
+            if (!util.isArray(value)) {
+                throw new Error('invalid value type ' + typeof (value) + ' for registry type REG_BINARY, please use an array of numbers')
+            }
+            return value.join(',')
 
-		case 'REG_MULTI_SZ':
-			if (!util.isArray(value)) {
-				throw new Error('invalid value type ' + typeof (value) + ' for registry type REG_BINARY, please use an array of strings')
-			}
-			return value.join(',')
+        case 'REG_MULTI_SZ':
+            if (!util.isArray(value)) {
+                throw new Error('invalid value type ' + typeof (value) + ' for registry type REG_BINARY, please use an array of strings')
+            }
+            return value.join(',')
 
-		case 'REG_SZ':
-			if (value === '') {
-				return '\0'
-			}
-			return value
+        case 'REG_SZ':
+            if (value === '') {
+                return '\0'
+            }
+            return value
 
-		default:
-			return value
-	}
+        default:
+            return value
+    }
 }
 
 //TODO: move to helper.js?
 function toCommandArgs(cmd, arch, keys) {
-	var result = baseCommand(cmd, arch)
-	if (typeof keys === 'string') {
-		result.push(keys)
-	} else if (util.isArray(keys)) {
-		result = result.concat(keys)
-	} else {
-		debug('creating command without using keys %s', keys ? keys : '')
-	}
+    var result = baseCommand(cmd, arch)
+    if (typeof keys === 'string') {
+        result.push(keys)
+    }
+    else if (util.isArray(keys)) {
+        result = result.concat(keys)
+    }
+    else {
+        debug('creating command without using keys %s', keys ? keys : '')
+    }
 
-	return result
+    return result
 }
 
 //TODO: move to helper.js?
 function baseCommand(cmd, arch) {
-	return ['//Nologo', path.join(__dirname, 'vbs', cmd), arch]
+    return ['//Nologo', path.join(__dirname, 'vbs', cmd), arch]
 }

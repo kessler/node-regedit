@@ -8,11 +8,13 @@ var errorsJs = fs.readFileSync('../errors.js', 'utf8')
 var start = errorsJs.indexOf(START_MARKER)
 var end = errorsJs.indexOf(END_MARKER, start)
 
-if (start === -1)
-	throw new Error('missing injection start marker')
+if (start === -1) {
+    throw new Error('missing injection start marker')
+}
 
-if (end === -1)
-	throw new Error('missing injection end marker')
+if (end === -1) {
+    throw new Error('missing injection end marker')
+}
 
 errorsJs = errorsJs.substring(0, start + START_MARKER.length) + '\n' + generatedErrorObjects + '\n' + errorsJs.substring(end)
 
