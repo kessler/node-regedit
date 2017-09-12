@@ -33,6 +33,21 @@ var OS_ARCH_32BIT = '32'
  */
 var OS_ARCH_64BIT = '64'
 
+/*
+ * 	If this value is set the module will change directory of the VBS to the appropriate location instead of the local VBS folder
+ */
+var externalVBSFolderLocation = undefined;
+
+module.exports.setExternalVBSLocation = function (newLocation) {
+    if (fs.existsSync(newLocation)) {
+        externalVBSFolderLocation = newLocation;
+        return 'Folder found and set';
+    }
+    else{
+        return 'Folder not found';
+    }
+}
+
 module.exports.list = function (keys, architecture, callback) {
 	//console.log('list with callback will be deprecated in future versions, use list streaming interface')
 
@@ -337,5 +352,8 @@ function toCommandArgs(cmd, arch, keys) {
 
 //TODO: move to helper.js?
 function baseCommand(cmd, arch) {
-    return ['//Nologo', path.join(__dirname, 'vbs', cmd), arch]
+    if(externalVBSFolderLocation !== undefined && externalVBSFolderLocation !== null)
+        return ['//Nologo', path.join(externalVBSFolderLocation, cmd), arch];
+    else
+        return ['//Nologo', path.join(__dirname, 'vbs', cmd), arch];
 }
