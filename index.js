@@ -1,3 +1,4 @@
+var fs = require('fs')
 var util = require('util')
 var childProcess = require('child_process')
 var path = require('path')
