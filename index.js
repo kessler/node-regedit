@@ -334,39 +334,40 @@ function toCommandArgs(cmd, arch, keys) {
 
     return result
 }
-var fs = require('fs');
-var tempVsdDir = path.join(os.tmpdir(), 'node-regedit');
+var fs = require('fs')
+var tempVsdDir = path.join(os.tmpdir(), 'node-regedit')
 
-copyVbsScriptToTemp = (function(){
-  var moved = false;
+var copyVbsScriptToTemp = (function(){
+    var moved = false
   
-  var vbsLocation = path.join(__dirname, 'vbs');
+    var vbsLocation = path.join(__dirname, 'vbs')
 
-  return function () {
-    if (moved) {
-      return
+    return function () {
+        if (moved) {
+            return
+        }
+        if (!fs.existsSync(tempVsdDir)) {
+            fs.mkdirSync(tempVsdDir)
+        }
+
+        var arr = fs.readdirSync(vbsLocation).filter(function(fileName){
+            var ext
+            return(ext = fileName.substr(-4)) === '.vbs' || ext === '.wsf'
+        })
+
+        console.log(arr, arr.length)
+
+        arr.forEach(function(c){
+            var content = fs.readFileSync(path.join(vbsLocation, c))
+            fs.writeFileSync(path.join(tempVsdDir, c), content)
+            console.log(path.join(tempVsdDir, c))
+        })
     }
-    if (!fs.existsSync(tempVsdDir)) {
-        fs.mkdirSync(tempVsdDir);
-    }
-
-    arr = fs.readdirSync(vbsLocation).filter(function(fileName){
-        return(ext = fileName.substr(-4)) === '.vbs' || ext === '.wsf'
-    })
-
-    console.log(arr, arr.length)
-
-    arr.map(function(c){
-        var content = fs.readFileSync(path.join(vbsLocation, c))
-        fs.writeFileSync(path.join(tempVsdDir, c), content);
-        console.log(path.join(tempVsdDir, c));
-    })
-  }
-})();
+}())
 
 //TODO: move to helper.js?
 function baseCommand(cmd, arch) {
-  copyVbsScriptToTemp();
-  return ['//Nologo', path.join(tempVsdDir, cmd), arch]
+    copyVbsScriptToTemp()
+    return ['//Nologo', path.join(tempVsdDir, cmd), arch]
 }
 
