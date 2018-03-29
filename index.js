@@ -353,8 +353,15 @@ function toCommandArgs(cmd, arch, keys) {
 
 //TODO: move to helper.js?
 function baseCommand(cmd, arch) {
-    if(externalVBSFolderLocation !== undefined && externalVBSFolderLocation !== null)
-        return ['//Nologo', path.join(externalVBSFolderLocation, cmd), arch];
-    else
-        return ['//Nologo', path.join(__dirname, 'vbs', cmd), arch];
+	
+	var scriptPath
+
+	// test undefined, null and empty string
+	if (externalVBSFolderLocation && typeof(externalVBSFolderLocation) === 'string') { 
+	   scriptPath = externalVBSFolderLocation
+	} else {
+	   scriptPath = path.join(__dirname, 'vbs')
+	}
+	
+	return ['//Nologo', path.join(scriptPath, cmd), arch]
 }
