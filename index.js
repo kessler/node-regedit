@@ -1,3 +1,4 @@
+var fs = require('fs')
 var util = require('util')
 var childProcess = require('child_process')
 var path = require('path')
@@ -32,6 +33,21 @@ var OS_ARCH_32BIT = '32'
  * 	Access the registry using 64bit os architecture, this will have no effect on 32bit process/machines
  */
 var OS_ARCH_64BIT = '64'
+
+/*
+ * 	If this value is set the module will change directory of the VBS to the appropriate location instead of the local VBS folder
+ */
+var externalVBSFolderLocation = undefined;
+
+module.exports.setExternalVBSLocation = function (newLocation) {
+    if (fs.existsSync(newLocation)) {
+        externalVBSFolderLocation = newLocation;
+        return 'Folder found and set';
+    }
+    else{
+        return 'Folder not found';
+    }
+}
 
 module.exports.list = function (keys, architecture, callback) {
 	//console.log('list with callback will be deprecated in future versions, use list streaming interface')
@@ -337,5 +353,15 @@ function toCommandArgs(cmd, arch, keys) {
 
 //TODO: move to helper.js?
 function baseCommand(cmd, arch) {
-    return ['//Nologo', path.join(__dirname, 'vbs', cmd), arch]
+	
+	var scriptPath
+
+	// test undefined, null and empty string
+	if (externalVBSFolderLocation && typeof(externalVBSFolderLocation) === 'string') { 
+	   scriptPath = externalVBSFolderLocation
+	} else {
+	   scriptPath = path.join(__dirname, 'vbs')
+	}
+	
+	return ['//Nologo', path.join(scriptPath, cmd), arch]
 }
