@@ -24,14 +24,8 @@
 		DetermineOSArchitecture()
 		LoadRegistryImplementationByOSArchitecture()
 	
-		Write "{"
 		For v = 1 To args.Count - 1
-			if (v > 1) Then
-				Write ","
-			End If
-			
-			Write """" & JsonSafe(args(v)) & """: "
-			
+						
 			ParseHiveAndSubKey args(v), constHive, strSubKey
 
 			if IsNull(constHive) Then
@@ -41,6 +35,5 @@
 
 			ListChildrenAsJson constHive, strSubKey
 		Next
-		Write "}"
 	</script>
 </job>
