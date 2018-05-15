@@ -37,6 +37,15 @@ When launching a 32bit application in 64bit environment, some of your paths will
 
 Further reading [here](https://msdn.microsoft.com/en-us/library/windows/desktop/ms724072%28v=vs.85%29.aspx)
 
+#### A note about Electron
+This software uses Windows Script Host to read and write to the registry. For that purpose, it will execute [`.wsf`](https://github.com/ironSource/node-regedit/tree/master/vbs) files. When packaging the app's dependencies with ASAR, `node-regedit` will not be able to access the windows script files, because they are bundled in a single ASAR file. Therefore it is necessary to store the `.wsf` files elsewhere, outside of the packaged asar file. You can set your custom location for the files with `setExternalVBSLocation(location)`:
+
+```
+// Assuming the files lie in <app>/resources/my-location
+const vbsDirectory = path.join(path.dirname(electron.remote.app.getPath('exe')), './resources/my-location');
+regedit.setExternalVBSLocation(vbsDirectory);
+```
+
 # API
 Every command executes a sub process that runs vbscript code. To boost efficiency, every command supports batching.
 
