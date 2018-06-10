@@ -3,124 +3,124 @@
 var should = require('should')
 var cscript = require('../lib/cscript.js')
 
-describe('cscript', function () {
-    var mockFs, mockExecFile
+describe('cscript', function() {
+	var mockFs, mockExecFile
 
-    it('must be initialized', function () {
-        (function () {
-            cscript.path()
-        }).should.throw('must initialize first')
-    })
+	it('must be initialized', function() {
+		(function() {
+			cscript.path()
+		}).should.throw('must initialize first')
+	})
 
-    it('if cscript.exe is successfully spawned then no more checks are conducted', function (done) {
-        mockExecFile['cscript.exe'].calls.should.eql(0)
-        mockExecFile['cscript.exe'].stdout = cscript.CSCRIPT_EXPECTED_OUTPUT
+	it('if cscript.exe is successfully spawned then no more checks are conducted', function(done) {
+		mockExecFile['cscript.exe'].calls.should.eql(0)
+		mockExecFile['cscript.exe'].stdout = cscript.CSCRIPT_EXPECTED_OUTPUT
 
-        cscript.init(function (err) {
-            if (err) {
-                return done(err)
-            }
+		cscript.init(function(err) {
+			if (err) {
+				return done(err)
+			}
 
-            mockExecFile['cscript.exe'].calls.should.eql(1)
-            mockExecFile['cscript.exe'].args[0].should.eql('cscript.exe')
-            done()
-        })
-    })
+			mockExecFile['cscript.exe'].calls.should.eql(1)
+			mockExecFile['cscript.exe'].args[0].should.eql('cscript.exe')
+			done()
+		})
+	})
 
-    it('initializes only once', function (done) {
+	it('initializes only once', function(done) {
 
-        mockExecFile['cscript.exe'].calls.should.eql(0)
-        mockExecFile['cscript.exe'].stdout = cscript.CSCRIPT_EXPECTED_OUTPUT
+		mockExecFile['cscript.exe'].calls.should.eql(0)
+		mockExecFile['cscript.exe'].stdout = cscript.CSCRIPT_EXPECTED_OUTPUT
 
-        cscript.init(function (err) {
-            if (err) {
-                return done(err)
-            }
+		cscript.init(function(err) {
+			if (err) {
+				return done(err)
+			}
 
-            mockExecFile['cscript.exe'].calls.should.eql(1)
-		
-            cscript.init(function (err) {
-                if (err) {
-                    return done(err) 
-                }
-				
-                mockExecFile['cscript.exe'].calls.should.eql(1)	
-                mockExecFile['where cscript.exe'].calls.should.eql(0)
-                done()
-            })
-        })
-    })
+			mockExecFile['cscript.exe'].calls.should.eql(1)
 
-    it('if cscript.exe fails to execute, try to run "where cscript.exe"', function (done) {
-        mockExecFile['cscript.exe'].calls.should.eql(0)
-        mockExecFile['where cscript.exe'].calls.should.eql(0)
+			cscript.init(function(err) {
+				if (err) {
+					return done(err)
+				}
 
-        mockExecFile['cscript.exe'].err = new Error()
-        mockExecFile['cscript.exe'].err.code = 'ENOENT'
-        mockExecFile['where cscript.exe'].stdout = '123'
+				mockExecFile['cscript.exe'].calls.should.eql(1)
+				mockExecFile['where cscript.exe'].calls.should.eql(0)
+				done()
+			})
+		})
+	})
 
-        cscript.init(function (err) {
-            if (err) {
-                return done(err) 
-            }
+	it('if cscript.exe fails to execute, try to run "where cscript.exe"', function(done) {
+		mockExecFile['cscript.exe'].calls.should.eql(0)
+		mockExecFile['where cscript.exe'].calls.should.eql(0)
 
-            mockExecFile['cscript.exe'].calls.should.eql(1)
-            mockExecFile['where cscript.exe'].calls.should.eql(1)
+		mockExecFile['cscript.exe'].err = new Error()
+		mockExecFile['cscript.exe'].err.code = 'ENOENT'
+		mockExecFile['where cscript.exe'].stdout = '123'
 
-            cscript.path().should.eql('123')
-            done()
-        })
-    })
+		cscript.init(function(err) {
+			if (err) {
+				return done(err)
+			}
 
-    beforeEach(function () {
-        mockFs = {
-            err: null,
-            calls: 0,
-            stat: function (name, cb) {
-                this.calls++
-                var self = this
-                setImmediate(function () {
-                    cb(self.err, {})
-                })
-            },
-        }
+			mockExecFile['cscript.exe'].calls.should.eql(1)
+			mockExecFile['where cscript.exe'].calls.should.eql(1)
 
-        mockExecFile = function(command, args, options, callback) {
-            if (!mockExecFile[command]) {
-                throw new Error('unexpected command ' + command)
-            }
+			cscript.path().should.eql('123')
+			done()
+		})
+	})
 
-            mockExecFile[command].args = arguments
-            mockExecFile[command].calls++
+	beforeEach(function() {
+		mockFs = {
+			err: null,
+			calls: 0,
+			stat: function(name, cb) {
+				this.calls++
+					var self = this
+				setImmediate(function() {
+					cb(self.err, {})
+				})
+			},
+		}
 
-            if (typeof args === 'function') {
-                callback = args
-                args = undefined
-                options = undefined
-            }
+		mockExecFile = function(command, args, options, callback) {
+			if (!mockExecFile[command]) {
+				throw new Error('unexpected command ' + command)
+			}
 
-            if (typeof options === 'function') {
-                callback = options
-                args = undefined
-                options = undefined
-            }
+			mockExecFile[command].args = arguments
+			mockExecFile[command].calls++
 
-            if (typeof callback !== 'function') {
-                throw new Error('missing callback')
-            }
+				if (typeof args === 'function') {
+					callback = args
+					args = undefined
+					options = undefined
+				}
 
-            setImmediate(function () {
-                callback(mockExecFile[command].err, mockExecFile[command].stdout, mockExecFile[command].stderr)
-            })
-        }
+			if (typeof options === 'function') {
+				callback = options
+				args = undefined
+				options = undefined
+			}
 
-        mockExecFile['cscript.exe'] = {calls: 0, stdout: '', stderr: '', err: null}
-        mockExecFile['where cscript.exe'] = {calls: 0, stdout: '', stderr: '', err: null}
+			if (typeof callback !== 'function') {
+				throw new Error('missing callback')
+			}
 
-        cscript._mock(mockFs, mockExecFile, false)
-    })
+			setImmediate(function() {
+				callback(mockExecFile[command].err, mockExecFile[command].stdout, mockExecFile[command].stderr)
+			})
+		}
 
-    afterEach(function () {
-        cscript._mockReset()
-    })
+		mockExecFile['cscript.exe'] = { calls: 0, stdout: '', stderr: '', err: null }
+		mockExecFile['where cscript.exe'] = { calls: 0, stdout: '', stderr: '', err: null }
+
+		cscript._mock(mockFs, mockExecFile, false)
+	})
+
+	afterEach(function() {
+		cscript._mockReset()
+	})
 })
