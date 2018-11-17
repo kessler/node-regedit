@@ -24,9 +24,6 @@
   "bugs": {
     "url": "https://github.com/ironSource/node-regedit/issues"
   },
-  "os": [
-    "win32"
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/ironSource/node-regedit"
@@ -34,9 +31,9 @@
   "homepage": "https://github.com/ironSource/node-regedit",
   "license": "MIT",
   "devDependencies": {
+    "mocha": "^5.2.0",
     "eslint": "^3.19.0",
     "husky": "^0.13.4",
-    "mocha": "^2.3.4",
     "should": "^4.4.2"
   }
 }
