@@ -78,7 +78,7 @@ describe('cscript', function() {
 			calls: 0,
 			stat: function(name, cb) {
 				this.calls++
-					var self = this
+				var self = this
 				setImmediate(function() {
 					cb(self.err, {})
 				})
@@ -93,11 +93,11 @@ describe('cscript', function() {
 			mockExecFile[command].args = arguments
 			mockExecFile[command].calls++
 
-				if (typeof args === 'function') {
-					callback = args
-					args = undefined
-					options = undefined
-				}
+			if (typeof args === 'function') {
+				callback = args
+				args = undefined
+				options = undefined
+			}
 
 			if (typeof options === 'function') {
 				callback = options

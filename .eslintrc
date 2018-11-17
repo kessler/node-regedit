@@ -128,8 +128,7 @@
             "always"
         ],
         "brace-style": [
-            "error",
-            "stroustrup"
+            "error"
         ],
         "camelcase": "error",
         "comma-dangle": [
@@ -176,7 +175,7 @@
         ],
         "indent": [
             "error",
-            4,
+            tab,
             {
                 "SwitchCase": 1
             }
@@ -217,7 +216,7 @@
         ],
         "object-curly-spacing": [
             "warn",
-            "never"
+            "always"
         ]
     }
 }

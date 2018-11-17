@@ -37,15 +37,15 @@ var OS_ARCH_64BIT = '64'
 /*
  * 	If this value is set the module will change directory of the VBS to the appropriate location instead of the local VBS folder
  */
-var externalVBSFolderLocation = undefined;
+var externalVBSFolderLocation
 
 module.exports.setExternalVBSLocation = function(newLocation) {
 	if (fs.existsSync(newLocation)) {
-		externalVBSFolderLocation = newLocation;
-		return 'Folder found and set';
-	} else {
-		return 'Folder not found';
+		externalVBSFolderLocation = newLocation
+		return 'Folder found and set'
 	}
+
+	return 'Folder not found'
 }
 
 module.exports.list = function(keys, architecture, callback) {
