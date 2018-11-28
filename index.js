@@ -1,43 +1,43 @@
-var fs = require('fs')
-var util = require('util')
-var childProcess = require('child_process')
-var path = require('path')
-var debug = require('debug')('regedit')
-var errors = require('./errors.js')
-var os = require('os')
-var StreamSlicer = require('stream-slicer')
-var through2 = require('through2')
-var helper = require('./lib/helper.js')
-var execFile = require('./lib/execFile.js')()
-var cscript = require('./lib/cscript.js')
+const fs = require('fs')
+const util = require('util')
+const childProcess = require('child_process')
+const path = require('path')
+const debug = require('debug')('regedit')
+const errors = require('./errors.js')
+const os = require('os')
+const StreamSlicer = require('stream-slicer')
+const through2 = require('through2')
+const helper = require('./lib/helper.js')
+const execFile = require('./lib/execFile.js')()
+const cscript = require('./lib/cscript.js')
 
 /*
  * 	Access the registry without using a specific os architecture, this means that on a 32bit process on a 64bit machine
  * 	when we access hklm\software we will actually be accessing hklm\software\wow6432node.
  */
-var OS_ARCH_AGNOSTIC = 'A'
+const OS_ARCH_AGNOSTIC = 'A'
 
 /*
  * 	Access the registry using a specific os architecture, but determine what the architecture is automatically
  * 	This means that accessing in order to access the 32bit software registry on a 64bit machine we will need to
  * 	use the key hklm\software\wow6432node
  */
-var OS_ARCH_SPECIFIC = 'S'
+const OS_ARCH_SPECIFIC = 'S'
 
 /*
  * 	Access the registry using 32bit os architecture
  */
-var OS_ARCH_32BIT = '32'
+const OS_ARCH_32BIT = '32'
 
 /*
  * 	Access the registry using 64bit os architecture, this will have no effect on 32bit process/machines
  */
-var OS_ARCH_64BIT = '64'
+const OS_ARCH_64BIT = '64'
 
 /*
  * 	If this value is set the module will change directory of the VBS to the appropriate location instead of the local VBS folder
  */
-var externalVBSFolderLocation
+let externalVBSFolderLocation = undefined;
 
 module.exports.setExternalVBSLocation = function(newLocation) {
 	if (fs.existsSync(newLocation)) {
@@ -66,16 +66,16 @@ module.exports.list = function(keys, architecture, callback) {
 	if (typeof callback === 'function') {
 		execute(toCommandArgs('regList.wsf', architecture, keys), callback)
 	} else {
-		var outputStream = through2.obj(helper.vbsOutputTransform)
+        const outputStream = through2.obj(helper.vbsOutputTransform)
 
 		cscript.init(function(err) {
 			if (err) {
 				return outputStream.emit('error', err)
 			}
 
-			var args = baseCommand('regListStream.wsf', architecture)
+			const args = baseCommand('regListStream.wsf', architecture)
 
-			var child = execFile(cscript.path(), args, { encoding: 'utf8' }, function(err) {
+			const child = execFile(cscript.path(), args, { encoding: 'utf8' }, function(err) {
 				if (err) {
 					outputStream.emit('error', err)
 				}
@@ -83,7 +83,7 @@ module.exports.list = function(keys, architecture, callback) {
 
 			child.stderr.pipe(process.stderr)
 
-			var slicer = new StreamSlicer({ sliceBy: helper.WIN_EOL })
+			const slicer = new StreamSlicer({ sliceBy: helper.WIN_EOL })
 
 			child.stdout.pipe(slicer).pipe(outputStream)
 
@@ -104,7 +104,7 @@ module.exports.createKey = function(keys, architecture, callback) {
 		keys = [keys]
 	}
 
-	var args = baseCommand('regCreateKey.wsf', architecture)
+	const args = baseCommand('regCreateKey.wsf', architecture)
 
 	spawnEx(args, keys, callback)
 }
@@ -119,7 +119,22 @@ module.exports.deleteKey = function(keys, architecture, callback) {
 		keys = [keys]
 	}
 
-	var args = baseCommand('regDeleteKey.wsf', architecture)
+  const args = baseCommand('regDeleteKey.wsf', architecture)
+
+  spawnEx(args, keys, callback)
+}
+
+module.exports.deleteValue = function (keys, architecture, callback) {
+  if (typeof architecture === 'function') {
+    callback = architecture
+    architecture = OS_ARCH_AGNOSTIC
+  }
+
+  if (typeof keys === 'string') {
+    keys = [keys]
+  }
+
+  var args = baseCommand('regDeleteValue.wsf', architecture)
 
 	spawnEx(args, keys, callback)
 }
@@ -130,15 +145,15 @@ module.exports.putValue = function(map, architecture, callback) {
 		architecture = OS_ARCH_AGNOSTIC
 	}
 
-	var args = baseCommand('regPutValue.wsf', architecture)
+	const args = baseCommand('regPutValue.wsf', architecture)
 
-	var values = []
+	let values = []
 
-	for (var key in map) {
-		var keyValues = map[key]
+	for (const key in map) {
+		const keyValues = map[key]
 
-		for (var valueName in keyValues) {
-			var entry = keyValues[valueName]
+		for (const valueName in keyValues) {
+			const entry = keyValues[valueName]
 
 			// helper writes the array to the stream in reversed order
 			values.push(entry.type)
@@ -148,7 +163,65 @@ module.exports.putValue = function(map, architecture, callback) {
 		}
 	}
 
-	spawnEx(args, values, callback)
+  spawnEx(args, values, callback)
+}
+
+module.exports.promisified = {
+	list: function (keys, architecture = OS_ARCH_AGNOSTIC) {
+		return new Promise(function(resolve, reject) {
+			module.exports.list(keys, architecture, function (err, res) {
+		    	if (err) {
+		        	return reject(err)
+		      	} else {
+		        	return resolve(res)
+		      	}
+		    })
+		})
+	},
+	createKey: function (keys, architecture = OS_ARCH_AGNOSTIC) {
+		return new Promise(function(resolve, reject) {
+			module.exports.createKey(keys, architecture, function (err) {
+		    	if (err) {
+		        	return reject(err)
+		      	} else {
+		        	return resolve()
+		      	}
+		    })
+		})
+	},
+	deleteKey: function (keys, architecture = OS_ARCH_AGNOSTIC) {
+		return new Promise(function(resolve, reject) {
+			module.exports.deleteKey(keys, architecture, function (err) {
+		    	if (err) {
+		        	return reject(err)
+		      	} else {
+		        	return resolve()
+		      	}
+		    })
+		})
+	},
+	deleteValue: function (keys, architecture = OS_ARCH_AGNOSTIC) {
+		return new Promise(function(resolve, reject) {
+			module.exports.deleteValue(keys, architecture, function (err) {
+		    	if (err) {
+		        	return reject(err)
+		      	} else {
+		        	return resolve()
+		      	}
+		    })
+		})
+	},
+	putValue: function (map, architecture = OS_ARCH_AGNOSTIC) {
+		return new Promise(function(resolve, reject) {
+			module.exports.putValue(map, architecture, function (err) {
+		    	if (err) {
+		        	return reject(err)
+		      	} else {
+		        	return resolve()
+		      	}
+		    })
+		})
+	}
 }
 
 module.exports.arch = {}
@@ -189,6 +262,18 @@ module.exports.arch.deleteKey64 = function(keys, callback) {
 	return module.exports.deleteKey(keys, OS_ARCH_64BIT, callback)
 }
 
+module.exports.arch.deleteValue = function(keys, callback) {
+	return module.exports.deleteValue(keys, OS_ARCH_SPECIFIC, callback)
+}
+
+module.exports.arch.deleteValue32 = function(keys, callback) {
+	return module.exports.deleteValue(keys, OS_ARCH_32BIT, callback)
+}
+
+module.exports.arch.deleteValue64 = function(keys, callback) {
+	return module.exports.deleteValue(keys, OS_ARCH_64BIT, callback)
+}
+
 module.exports.arch.putValue = function(keys, callback) {
 	return module.exports.putValue(keys, OS_ARCH_SPECIFIC, callback)
 }
@@ -199,6 +284,54 @@ module.exports.arch.putValue32 = function(keys, callback) {
 
 module.exports.arch.putValue64 = function(keys, callback) {
 	return module.exports.putValue(keys, OS_ARCH_64BIT, callback)
+}
+
+module.exports.arch.promisified = {
+	list: function (keys) {
+		return module.exports.promisified.list(keys, OS_ARCH_SPECIFIC)
+	},
+	list32: function (keys) {
+		return module.exports.promisified.list(keys, OS_ARCH_32BIT)
+	},
+	list64: function (keys) {
+		return module.exports.promisified.list(keys, OS_ARCH_64BIT)
+	},
+	createKey: function (keys) {
+		return module.exports.promisified.createKey(keys, OS_ARCH_SPECIFIC)
+	},
+	createKey32: function (keys) {
+		return module.exports.promisified.createKey(keys, OS_ARCH_32BIT)
+	},
+	createKey64: function (keys) {
+		return module.exports.promisified.createKey(keys, OS_ARCH_64BIT)
+	},
+	deleteKey: function (keys) {
+		return module.exports.promisified.deleteKey(keys, OS_ARCH_SPECIFIC)
+	},
+	deleteKey32: function (keys) {
+		return module.exports.promisified.deleteKey(keys, OS_ARCH_32BIT)
+	},
+	deleteKey64: function (keys) {
+		return module.exports.promisified.deleteKey(keys, OS_ARCH_64BIT)
+	},
+	deleteValue: function (keys) {
+		return module.exports.promisified.deleteValue(keys, OS_ARCH_SPECIFIC)
+	},
+	deleteValue32: function (keys) {
+		return module.exports.promisified.deleteValue(keys, OS_ARCH_32BIT)
+	},
+	deleteValue64: function (keys) {
+		return module.exports.promisified.deleteValue(keys, OS_ARCH_64BIT)
+	},
+	putValue: function (keys) {
+		return module.exports.promisified.putValue(keys, OS_ARCH_SPECIFIC)
+	},
+	putValue32: function (keys) {
+		return module.exports.promisified.putValue(keys, OS_ARCH_32BIT)
+	},
+	putValue64: function (keys) {
+		return module.exports.promisified.putValue(keys, OS_ARCH_64BIT)
+	}
 }
 
 function execute(args, callback) {
@@ -242,7 +375,7 @@ function execute(args, callback) {
 
 			debug(stdout)
 
-			var result
+			let result
 			err = null
 
 			try {
@@ -265,7 +398,7 @@ function spawnEx(args, keys, callback) {
 
 		debug(args)
 
-		var child = execFile(cscript.path(), args, { encoding: 'utf8' })
+		const child = execFile(cscript.path(), args, { encoding: 'utf8' })
 
 		handleErrorsAndClose(child, callback)
 
@@ -274,7 +407,7 @@ function spawnEx(args, keys, callback) {
 }
 
 function handleErrorsAndClose(child, callback) {
-	var error
+	let error
 	child.once('error', function(e) {
 		debug('process error %s', e)
 		error = e
@@ -308,6 +441,12 @@ function renderValueByType(value, type) {
 	type = type.toUpperCase()
 
 	switch (type) {
+    case 'REG_NONE':
+      if (value === '') {
+        return '\0'
+      }
+      return value
+        
 		case 'REG_BINARY':
 			if (!util.isArray(value)) {
 				throw new Error('invalid value type ' + typeof(value) + ' for registry type REG_BINARY, please use an array of numbers')
@@ -333,7 +472,7 @@ function renderValueByType(value, type) {
 
 //TODO: move to helper.js?
 function toCommandArgs(cmd, arch, keys) {
-	var result = baseCommand(cmd, arch)
+	let result = baseCommand(cmd, arch)
 	if (typeof keys === 'string') {
 		result.push(keys)
 	} else if (util.isArray(keys)) {
@@ -348,7 +487,7 @@ function toCommandArgs(cmd, arch, keys) {
 //TODO: move to helper.js?
 function baseCommand(cmd, arch) {
 
-	var scriptPath
+	let scriptPath
 
 	// test undefined, null and empty string
 	if (externalVBSFolderLocation && typeof(externalVBSFolderLocation) === 'string') {

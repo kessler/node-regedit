@@ -69,3 +69,7 @@ End Function
 Function DeleteKey(constHive, strSubKey)
 	DeleteKey = private_oReg.DeleteKey(constHive, strSubKey)
 End Function
+
+Function DeleteValue(constHive, strSubKey, strValue)
+	DeleteValue = private_oReg.DeleteValue(constHive, strSubKey, strValue)
+End Function
