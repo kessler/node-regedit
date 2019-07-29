@@ -32,7 +32,7 @@
   "license": "MIT",
   "devDependencies": {
     "mocha": "^5.2.0",
-    "eslint": "^3.19.0",
+    "eslint": "^4.18.2",
     "husky": "^0.13.4",
     "should": "^4.4.2"
   }
