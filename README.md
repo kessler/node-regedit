@@ -45,6 +45,7 @@ This software uses Windows Script Host to read and write to the registry. For th
 const vbsDirectory = path.join(path.dirname(electron.remote.app.getPath('exe')), './resources/my-location');
 regedit.setExternalVBSLocation(vbsDirectory);
 ```
+Also, take a look at [#60](https://github.com/ironSource/node-regedit/issues/60)
 
 # API
 Every command executes a sub process that runs vbscript code. To boost efficiency, every command supports batching.
