@@ -180,6 +180,8 @@ Function RenderType(intType)
 	RenderType = "REG_UNKNOWN"
 
 	Select Case intType
+		Case 0
+			RenderType = "REG_NONE"
 		Case 1
 			RenderType = "REG_SZ"
 		Case 2
@@ -208,6 +210,10 @@ End Function
 Function RenderValueByType(intType, varValue)
 
 	Select Case intType
+		' REG_NONE
+		Case 0
+			RenderValueByType = "null"
+
 		' REG_SZ
 		Case 1
 			RenderValueByType = """" & JsonSafe(varValue) & """"
@@ -242,6 +248,11 @@ End Function
 Sub GetValueByType(constHive, strKey, strValueName, intType, outVarValue)
 
 	Select Case intType
+		' REG_NONE
+		Case 0
+			outVarValue = "NONE"
+			Exit Sub
+
 		' REG_SZ
 		Case 1
 			GetStringValue constHive, strKey, strValueName, outVarValue
