@@ -66,7 +66,7 @@ module.exports.list = function(keys, architecture, callback) {
 	if (typeof callback === 'function') {
 		execute(toCommandArgs('regList.wsf', architecture, keys), callback)
 	} else {
-        const outputStream = through2.obj(helper.vbsOutputTransform)
+		const outputStream = through2.obj(helper.vbsOutputTransform)
 
 		cscript.init(function(err) {
 			if (err) {
@@ -119,22 +119,22 @@ module.exports.deleteKey = function(keys, architecture, callback) {
 		keys = [keys]
 	}
 
-  const args = baseCommand('regDeleteKey.wsf', architecture)
+	const args = baseCommand('regDeleteKey.wsf', architecture)
 
-  spawnEx(args, keys, callback)
+	spawnEx(args, keys, callback)
 }
 
-module.exports.deleteValue = function (keys, architecture, callback) {
-  if (typeof architecture === 'function') {
-    callback = architecture
-    architecture = OS_ARCH_AGNOSTIC
-  }
+module.exports.deleteValue = function(keys, architecture, callback) {
+	if (typeof architecture === 'function') {
+		callback = architecture
+		architecture = OS_ARCH_AGNOSTIC
+	}
 
-  if (typeof keys === 'string') {
-    keys = [keys]
-  }
+	if (typeof keys === 'string') {
+		keys = [keys]
+	}
 
-  var args = baseCommand('regDeleteValue.wsf', architecture)
+	var args = baseCommand('regDeleteValue.wsf', architecture)
 
 	spawnEx(args, keys, callback)
 }
@@ -163,63 +163,63 @@ module.exports.putValue = function(map, architecture, callback) {
 		}
 	}
 
-  spawnEx(args, values, callback)
+	spawnEx(args, values, callback)
 }
 
 module.exports.promisified = {
-	list: function (keys, architecture = OS_ARCH_AGNOSTIC) {
+	list: function(keys, architecture = OS_ARCH_AGNOSTIC) {
 		return new Promise(function(resolve, reject) {
-			module.exports.list(keys, architecture, function (err, res) {
-		    	if (err) {
-		        	return reject(err)
-		      	} else {
-		        	return resolve(res)
-		      	}
-		    })
+			module.exports.list(keys, architecture, function(err, res) {
+				if (err) {
+					return reject(err)
+				} else {
+					return resolve(res)
+				}
+			})
 		})
 	},
-	createKey: function (keys, architecture = OS_ARCH_AGNOSTIC) {
+	createKey: function(keys, architecture = OS_ARCH_AGNOSTIC) {
 		return new Promise(function(resolve, reject) {
-			module.exports.createKey(keys, architecture, function (err) {
-		    	if (err) {
-		        	return reject(err)
-		      	} else {
-		        	return resolve()
-		      	}
-		    })
+			module.exports.createKey(keys, architecture, function(err) {
+				if (err) {
+					return reject(err)
+				} else {
+					return resolve()
+				}
+			})
 		})
 	},
-	deleteKey: function (keys, architecture = OS_ARCH_AGNOSTIC) {
+	deleteKey: function(keys, architecture = OS_ARCH_AGNOSTIC) {
 		return new Promise(function(resolve, reject) {
-			module.exports.deleteKey(keys, architecture, function (err) {
-		    	if (err) {
-		        	return reject(err)
-		      	} else {
-		        	return resolve()
-		      	}
-		    })
+			module.exports.deleteKey(keys, architecture, function(err) {
+				if (err) {
+					return reject(err)
+				} else {
+					return resolve()
+				}
+			})
 		})
 	},
-	deleteValue: function (keys, architecture = OS_ARCH_AGNOSTIC) {
+	deleteValue: function(keys, architecture = OS_ARCH_AGNOSTIC) {
 		return new Promise(function(resolve, reject) {
-			module.exports.deleteValue(keys, architecture, function (err) {
-		    	if (err) {
-		        	return reject(err)
-		      	} else {
-		        	return resolve()
-		      	}
-		    })
+			module.exports.deleteValue(keys, architecture, function(err) {
+				if (err) {
+					return reject(err)
+				} else {
+					return resolve()
+				}
+			})
 		})
 	},
-	putValue: function (map, architecture = OS_ARCH_AGNOSTIC) {
+	putValue: function(map, architecture = OS_ARCH_AGNOSTIC) {
 		return new Promise(function(resolve, reject) {
-			module.exports.putValue(map, architecture, function (err) {
-		    	if (err) {
-		        	return reject(err)
-		      	} else {
-		        	return resolve()
-		      	}
-		    })
+			module.exports.putValue(map, architecture, function(err) {
+				if (err) {
+					return reject(err)
+				} else {
+					return resolve()
+				}
+			})
 		})
 	}
 }
@@ -287,49 +287,49 @@ module.exports.arch.putValue64 = function(keys, callback) {
 }
 
 module.exports.arch.promisified = {
-	list: function (keys) {
+	list: function(keys) {
 		return module.exports.promisified.list(keys, OS_ARCH_SPECIFIC)
 	},
-	list32: function (keys) {
+	list32: function(keys) {
 		return module.exports.promisified.list(keys, OS_ARCH_32BIT)
 	},
-	list64: function (keys) {
+	list64: function(keys) {
 		return module.exports.promisified.list(keys, OS_ARCH_64BIT)
 	},
-	createKey: function (keys) {
+	createKey: function(keys) {
 		return module.exports.promisified.createKey(keys, OS_ARCH_SPECIFIC)
 	},
-	createKey32: function (keys) {
+	createKey32: function(keys) {
 		return module.exports.promisified.createKey(keys, OS_ARCH_32BIT)
 	},
-	createKey64: function (keys) {
+	createKey64: function(keys) {
 		return module.exports.promisified.createKey(keys, OS_ARCH_64BIT)
 	},
-	deleteKey: function (keys) {
+	deleteKey: function(keys) {
 		return module.exports.promisified.deleteKey(keys, OS_ARCH_SPECIFIC)
 	},
-	deleteKey32: function (keys) {
+	deleteKey32: function(keys) {
 		return module.exports.promisified.deleteKey(keys, OS_ARCH_32BIT)
 	},
-	deleteKey64: function (keys) {
+	deleteKey64: function(keys) {
 		return module.exports.promisified.deleteKey(keys, OS_ARCH_64BIT)
 	},
-	deleteValue: function (keys) {
+	deleteValue: function(keys) {
 		return module.exports.promisified.deleteValue(keys, OS_ARCH_SPECIFIC)
 	},
-	deleteValue32: function (keys) {
+	deleteValue32: function(keys) {
 		return module.exports.promisified.deleteValue(keys, OS_ARCH_32BIT)
 	},
-	deleteValue64: function (keys) {
+	deleteValue64: function(keys) {
 		return module.exports.promisified.deleteValue(keys, OS_ARCH_64BIT)
 	},
-	putValue: function (keys) {
+	putValue: function(keys) {
 		return module.exports.promisified.putValue(keys, OS_ARCH_SPECIFIC)
 	},
-	putValue32: function (keys) {
+	putValue32: function(keys) {
 		return module.exports.promisified.putValue(keys, OS_ARCH_32BIT)
 	},
-	putValue64: function (keys) {
+	putValue64: function(keys) {
 		return module.exports.promisified.putValue(keys, OS_ARCH_64BIT)
 	}
 }
@@ -441,12 +441,12 @@ function renderValueByType(value, type) {
 	type = type.toUpperCase()
 
 	switch (type) {
-    case 'REG_NONE':
-      if (value === '') {
-        return '\0'
-      }
-      return value
-        
+		case 'REG_NONE':
+			if (value === '') {
+				return '\0'
+			}
+			return value
+
 		case 'REG_BINARY':
 			if (!util.isArray(value)) {
 				throw new Error('invalid value type ' + typeof(value) + ' for registry type REG_BINARY, please use an array of numbers')
