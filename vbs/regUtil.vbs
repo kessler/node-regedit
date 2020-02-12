@@ -32,6 +32,9 @@ Function PutValue(constHive, strSubKey, strValueName, strValue, strType)
 		Case "REG_BINARY"
 			PutValue = SetBinaryValue(constHive, strSubKey, strValueName, ToBinaryValue(strValue))
 
+		Case "REG_NONE"
+			PutValue = SetBinaryValue(constHive, strSubKey, strValueName, ToBinaryValue(strValue))
+
 		' TODO: need to check that indeed int is the right type here
 		Case "REG_DWORD"
 			PutValue = SetDWORDValue(constHive, strSubKey, strValueName, CDbl(strValue))
@@ -153,6 +156,36 @@ Sub ParseHiveAndSubKey(strRawKey, outConstHive, outStrSubKey)
 	outConstHive = StringToHiveConst(UCase(strHive))
 End Sub
 
+Function ArrayRemoveAt(arr, pos)
+  Dim i
+  If IsArray(arr) Then
+    If pos >= 0 And pos <= UBound(arr) Then
+      For i = pos To UBound(arr) - 1
+        arr(i) = arr(i + 1)
+      Next
+      ReDim Preserve arr(UBound(arr) - 1)
+    End If
+  End If
+End Function
+
+Sub ParseHiveAndSubKeyAndValue(strRawKey, outConstHive, outStrSubKey, outStrValue)
+	' split into two parts to deduce the hive and the sub key
+	arrSplitted = Split(strRawKey, "\", -1, 1)
+
+	If UBound(arrSplitted) > 0 Then
+		strHive = arrSplitted(0)
+        outStrValue = arrSplitted(UBound(arrSplitted))
+        test = ArrayRemoveAt(arrSplitted, UBound(arrSplitted))
+        test = ArrayRemoveAt(arrSplitted, 0)
+        outStrSubKey = Join(arrSplitted, "\")
+	Else
+		strHive = strRawKey
+		outStrSubKey = ""
+	End If
+
+	outConstHive = StringToHiveConst(UCase(strHive))
+End Sub
+
 Function StringToHiveConst(strHive)
 	
 	Select Case strHive
@@ -180,6 +213,8 @@ Function RenderType(intType)
 	RenderType = "REG_UNKNOWN"
 
 	Select Case intType
+		Case 0
+			RenderType = "REG_NONE"
 		Case 1
 			RenderType = "REG_SZ"
 		Case 2
@@ -208,6 +243,10 @@ End Function
 Function RenderValueByType(intType, varValue)
 
 	Select Case intType
+		' REG_NONE
+		Case 0
+			RenderValueByType = "0"
+
 		' REG_SZ
 		Case 1
 			RenderValueByType = """" & JsonSafe(varValue) & """"
@@ -242,6 +281,11 @@ End Function
 Sub GetValueByType(constHive, strKey, strValueName, intType, outVarValue)
 
 	Select Case intType
+		' REG_NONE
+		Case 0
+			GetStringValue constHive, strKey, strValueName, "0"
+			Exit Sub
+
 		' REG_SZ
 		Case 1
 			GetStringValue constHive, strKey, strValueName, outVarValue
