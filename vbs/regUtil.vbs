@@ -225,6 +225,8 @@ Function RenderType(intType)
 			RenderType = "REG_DWORD"
 		Case 7
 			RenderType = "REG_MULTI_SZ"
+		Case 9
+			RenderType = "REG_FULL_RESOURCE_DESCRIPTOR"
 		Case 11	
 			RenderType = "REG_QWORD"
 		Case Else
@@ -265,11 +267,16 @@ Function RenderValueByType(intType, varValue)
 
 		' REG_MULYI_SZ'
 		Case 7
-
 			RenderValueByType = RenderStringArray(varValue)
+
+		' REG_FULL_RESOURCE_DESCRIPTOR
+		Case 9
+			RenderValueByType = RenderByteArray(varValue)
+
 		' REG_QWORD
 		Case 11
 			RenderValueByType = varValue
+            
 		Case Else
 			' TODO: should report / throw an error here
 			WriteErr("invalid Registry Value Type " & intType)
@@ -313,6 +320,11 @@ Sub GetValueByType(constHive, strKey, strValueName, intType, outVarValue)
 		' REG_MULYI_SZ'
 		Case 7
 			GetMultiStringValue constHive, strKey, strValueName, outVarValue
+			Exit Sub
+
+		' REG_FULL_RESOURCE_DESCRIPTOR
+		Case 9
+			GetBinaryValue constHive, strKey, strValueName, outVarValue
 			Exit Sub
 			
 		' REG_QWORD
