@@ -228,6 +228,10 @@ regedit.putValue(values, function (err) {
 ```
 For now this is how its going to be, but in the future this will probably change, possibly in a way that will effect the whole interface.
 
+### regedit.deleteValue([String|Array], [Function])
+Deletes one or more values in the registry
+**This operation will mutate the keys array**
+
 ## Develop
 
 ### Run tests
@@ -241,4 +245,4 @@ For now this is how its going to be, but in the future this will probably change
 ```
 
 ## TODO
-deleteValue()
+None :)

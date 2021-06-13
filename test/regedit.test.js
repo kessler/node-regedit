@@ -128,6 +128,10 @@ describe('regedit', function() {
 			var key = 'HKCU\\Keyboard Layout'
 
 			index.list([key], function(err, result) {
+				if (err) {
+					return done(err)
+				}
+
 				result[key].should.have.property('keys')
 				result[key].keys.map(toLowerCase).should.containEql('preload')
 				result[key].keys.map(toLowerCase).should.containEql('substitutes')
@@ -141,7 +145,6 @@ describe('regedit', function() {
 			var key = 'HKCU\\software\\ironsource\\'
 
 			index.list(key, function(err, result) {
-
 				if (err) {
 					return done(err)
 				}
@@ -154,7 +157,7 @@ describe('regedit', function() {
 		})
 
 		it('will fail for unknown hives', function(done) {
-			index.list('lala\\software', function(err, result) {
+			index.list('lala\\software', function(err) {
 				should(err).not.be.null
 				err.message.should.eql('unsupported hive')
 				done()
@@ -178,7 +181,7 @@ describe('regedit', function() {
 		var now = Date.now().toString()
 
 		it('will throw an error if we dont have permission', function(done) {
-			index.createKey('HKLM\\SECURITY\\unauthorized', function(err, result) {
+			index.createKey('HKLM\\SECURITY\\unauthorized', function(err) {
 				err.should.be.an.Error
 				err.message.should.eql('access is denied')
 				done()
@@ -488,6 +491,10 @@ describe('regedit', function() {
 			}
 
 			index.putValue(values, function(err) {
+				if (err) {
+					return done(err)
+				}
+
 				index.list(key + now, function(err, results) {
 					if (err) {
 						return done(err)
@@ -696,6 +703,102 @@ describe('regedit', function() {
 
 		afterEach(function() {
 			now = Date.now().toString()
+		})
+	})
+
+	describe('delete values', function() {
+		var key = 'HKCU\\SOFTWARE\\ironSource\\regedit\\test\\'
+		var now = ''
+		var map = {}
+
+		function genericTest(arch, done) {
+			index.arch['putValue' + arch](map, function(err) {
+				if (err) {
+					return done(err)
+				}
+
+				index.arch['list' + arch](key + now, function(err, result) {
+					if (err) {
+						return done(err)
+					}
+
+					var values = result[key + now].values
+					values.should.have.property('DeleteMe')
+
+					index.arch['deleteValue' + arch](key + now + '\\DeleteMe', function(err) {
+						if (err) {
+							return done(err)
+						}
+
+						index.arch['list' + arch](key + now, function(err, result) {
+							if (err) {
+								return done(err)
+							}
+
+							result[key + now].should.not.have.property('DeleteMe')
+
+							done()
+						})
+					})
+				})
+			})
+		}
+
+		beforeEach(function(done) {
+			now = Date.now().toString()
+			map[key + now] = {
+				'DeleteMe': {
+					type: 'reg_sz',
+					value: 'some string',
+				},
+			}
+			this.currentTest.title = 'Key: ' + key + now + ' ' + this.currentTest.title
+			index.createKey(key + now, done)
+		})
+
+		it('', function(done) {
+			index.putValue(map, function(err) {
+				if (err) {
+					return done(err)
+				}
+
+				index.list(key + now, function(err, result) {
+					if (err) {
+						return done(err)
+					}
+
+					var values = result[key + now].values
+					values.should.have.property('DeleteMe')
+
+					index.deleteValue(key + now + '\\DeleteMe', function(err) {
+						if (err) {
+							return done(err)
+						}
+
+						index.list(key + now, function(err, result) {
+							if (err) {
+								return done(err)
+							}
+
+							result[key + now].should.not.have.property('values')
+
+							done()
+						})
+					})
+				})
+			})
+		})
+	
+		it('S', function(done) {
+			genericTest('', done)
+		})
+
+		it('32bit', function(done) {
+			genericTest('32', done)
+		})
+
+		it('64bit', function(done) {
+			genericTest('64', done)
 		})
 	})
 })

@@ -11,6 +11,9 @@ describe('list', function() {
 
 		// use non streaming interface to get expected results
 		index.list(testKey, function(err, expectedResults) {
+			if (err) {
+				return done(err)
+			}
 
 			var actualResults = {}
 			var error
@@ -35,6 +38,10 @@ describe('list', function() {
 
 		// use non streaming interface to get expected results
 		index.list(keys, function(err, expectedResults) {
+			if (err) {
+				return done(err)
+			}
+			
 			index.list(keys)
 				.once('error', function(e) {
 					error = e

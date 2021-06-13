@@ -4,7 +4,6 @@ const childProcess = require('child_process')
 const path = require('path')
 const debug = require('debug')('regedit')
 const errors = require('./errors.js')
-const os = require('os')
 const StreamSlicer = require('stream-slicer')
 const through2 = require('through2')
 const helper = require('./lib/helper.js')
@@ -37,7 +36,170 @@ const OS_ARCH_64BIT = '64'
 /*
  * 	If this value is set the module will change directory of the VBS to the appropriate location instead of the local VBS folder
  */
-let externalVBSFolderLocation = undefined;
+let externalVBSFolderLocation
+
+function handleErrorsAndClose(child, callback) {
+	let error
+	child.once('error', function(e) {
+		debug('process error %s', e)
+		error = e
+	})
+
+	child.once('close', function(code) {
+		debug('process exit with code %d', code)
+
+		if (error) {
+			if (error.code in errors) {
+				return callback(errors[error.code])
+			}
+			return callback(error)
+
+		}
+
+		if (code !== 0) {
+			if (code in errors) {
+				return callback(errors[code])
+			}
+			return callback(new Error('vbscript process reported unknown error code ' + code))
+
+		}
+
+		callback()
+	})
+}
+
+function execute(args, callback) {
+	if (typeof callback !== 'function') {
+		throw new Error('missing callback')
+	}
+
+	debug(args)
+
+	cscript.init(function(err) {
+		if (err) {
+			return callback(err)
+		}
+
+		childProcess.execFile(cscript.path(), args, function(err, stdout, stderr) {
+
+			if (err) {
+				if (stdout) {
+					console.log(stdout)
+				}
+
+				if (stderr) {
+					console.error(stderr)
+				}
+
+				if (err.code in errors) {
+					return callback(errors[err.code])
+				}
+				return callback(err)
+
+			}
+
+			// in case we have stuff in stderr but no real error
+			if (stderr) {
+				return callback(new Error(stderr))
+			}
+			if (!stdout) {
+				return callback()
+			}
+
+			debug(stdout)
+
+			let result
+			err = null
+
+			try {
+				result = JSON.parse(stdout)
+			} catch (e) {
+				e.stdout = stdout
+				err = e
+			}
+
+			callback(err, result)
+		})
+	})
+}
+
+function spawnEx(args, keys, callback) {
+	cscript.init(function(err) {
+		if (err) {
+			return callback(err)
+		}
+
+		debug(args)
+
+		const child = execFile(cscript.path(), args, { encoding: 'utf8' })
+
+		handleErrorsAndClose(child, callback)
+
+		helper.writeArrayToStream(keys, child.stdin)
+	})
+}
+
+//TODO: move to helper.js?
+function renderValueByType(value, type) {
+	type = type.toUpperCase()
+
+	switch (type) {
+		case 'REG_NONE':
+			if (value === '') {
+				return '\0'
+			}
+			return value
+
+		case 'REG_BINARY':
+			if (!util.isArray(value)) {
+				throw new Error('invalid value type ' + typeof(value) + ' for registry type REG_BINARY, please use an array of numbers')
+			}
+			return value.join(',')
+
+		case 'REG_MULTI_SZ':
+			if (!util.isArray(value)) {
+				throw new Error('invalid value type ' + typeof(value) + ' for registry type REG_BINARY, please use an array of strings')
+			}
+			return value.join(',')
+
+		case 'REG_SZ':
+			if (value === '') {
+				return '\0'
+			}
+			return value
+
+		default:
+			return value
+	}
+}
+
+//TODO: move to helper.js?
+function baseCommand(cmd, arch) {
+	let scriptPath
+
+	// test undefined, null and empty string
+	if (externalVBSFolderLocation && typeof(externalVBSFolderLocation) === 'string') {
+		scriptPath = externalVBSFolderLocation
+	} else {
+		scriptPath = path.join(__dirname, 'vbs')
+	}
+
+	return ['//Nologo', path.join(scriptPath, cmd), arch]
+}
+
+//TODO: move to helper.js?
+function toCommandArgs(cmd, arch, keys) {
+	let result = baseCommand(cmd, arch)
+	if (typeof keys === 'string') {
+		result.push(keys)
+	} else if (util.isArray(keys)) {
+		result = result.concat(keys)
+	} else {
+		debug('creating command without using keys %s', keys ? keys : '')
+	}
+
+	return result
+}
 
 module.exports.setExternalVBSLocation = function(newLocation) {
 	if (fs.existsSync(newLocation)) {
@@ -150,16 +312,20 @@ module.exports.putValue = function(map, architecture, callback) {
 	let values = []
 
 	for (const key in map) {
-		const keyValues = map[key]
+		if (map.hasOwnProperty(key)) {
+			const keyValues = map[key]
 
-		for (const valueName in keyValues) {
-			const entry = keyValues[valueName]
+			for (const valueName in keyValues) {
+				if (keyValues.hasOwnProperty(valueName)) {
+					const entry = keyValues[valueName]
 
-			// helper writes the array to the stream in reversed order
-			values.push(entry.type)
-			values.push(renderValueByType(entry.value, entry.type))
-			values.push(valueName)
-			values.push(key)
+					// helper writes the array to the stream in reversed order
+					values.push(entry.type)
+					values.push(renderValueByType(entry.value, entry.type))
+					values.push(valueName)
+					values.push(key)
+				}
+			}
 		}
 	}
 
@@ -172,9 +338,9 @@ module.exports.promisified = {
 			module.exports.list(keys, architecture, function(err, res) {
 				if (err) {
 					return reject(err)
-				} else {
-					return resolve(res)
-				}
+				} 
+				return resolve(res)
+				
 			})
 		})
 	},
@@ -183,9 +349,9 @@ module.exports.promisified = {
 			module.exports.createKey(keys, architecture, function(err) {
 				if (err) {
 					return reject(err)
-				} else {
-					return resolve()
-				}
+				} 
+				return resolve()
+				
 			})
 		})
 	},
@@ -194,9 +360,9 @@ module.exports.promisified = {
 			module.exports.deleteKey(keys, architecture, function(err) {
 				if (err) {
 					return reject(err)
-				} else {
-					return resolve()
-				}
+				} 
+				return resolve()
+				
 			})
 		})
 	},
@@ -205,9 +371,9 @@ module.exports.promisified = {
 			module.exports.deleteValue(keys, architecture, function(err) {
 				if (err) {
 					return reject(err)
-				} else {
-					return resolve()
-				}
+				} 
+				return resolve()
+				
 			})
 		})
 	},
@@ -216,12 +382,12 @@ module.exports.promisified = {
 			module.exports.putValue(map, architecture, function(err) {
 				if (err) {
 					return reject(err)
-				} else {
-					return resolve()
-				}
+				} 
+				return resolve()
+				
 			})
 		})
-	}
+	},
 }
 
 module.exports.arch = {}
@@ -331,170 +497,5 @@ module.exports.arch.promisified = {
 	},
 	putValue64: function(keys) {
 		return module.exports.promisified.putValue(keys, OS_ARCH_64BIT)
-	}
-}
-
-function execute(args, callback) {
-
-	if (typeof callback !== 'function') {
-		throw new Error('missing callback')
-	}
-
-	debug(args)
-
-	cscript.init(function(err) {
-		if (err) {
-			return callback(err)
-		}
-
-		childProcess.execFile(cscript.path(), args, function(err, stdout, stderr) {
-
-			if (err) {
-				if (stdout) {
-					console.log(stdout)
-				}
-
-				if (stderr) {
-					console.error(stderr)
-				}
-
-				if (err.code in errors) {
-					return callback(errors[err.code])
-				}
-				return callback(err)
-
-			}
-
-			// in case we have stuff in stderr but no real error
-			if (stderr) {
-				return callback(new Error(stderr))
-			}
-			if (!stdout) {
-				return callback()
-			}
-
-			debug(stdout)
-
-			let result
-			err = null
-
-			try {
-				result = JSON.parse(stdout)
-			} catch (e) {
-				e.stdout = stdout
-				err = e
-			}
-
-			callback(err, result)
-		})
-	})
-}
-
-function spawnEx(args, keys, callback) {
-	cscript.init(function(err) {
-		if (err) {
-			return callback(err)
-		}
-
-		debug(args)
-
-		const child = execFile(cscript.path(), args, { encoding: 'utf8' })
-
-		handleErrorsAndClose(child, callback)
-
-		helper.writeArrayToStream(keys, child.stdin)
-	})
-}
-
-function handleErrorsAndClose(child, callback) {
-	let error
-	child.once('error', function(e) {
-		debug('process error %s', e)
-		error = e
-	})
-
-	child.once('close', function(code) {
-		debug('process exit with code %d', code)
-
-		if (error) {
-			if (error.code in errors) {
-				return callback(errors[error.code])
-			}
-			return callback(error)
-
-		}
-
-		if (code !== 0) {
-			if (code in errors) {
-				return callback(errors[code])
-			}
-			return callback(new Error('vbscript process reported unknown error code ' + code))
-
-		}
-
-		callback()
-	})
-}
-
-//TODO: move to helper.js?
-function renderValueByType(value, type) {
-	type = type.toUpperCase()
-
-	switch (type) {
-		case 'REG_NONE':
-			if (value === '') {
-				return '\0'
-			}
-			return value
-
-		case 'REG_BINARY':
-			if (!util.isArray(value)) {
-				throw new Error('invalid value type ' + typeof(value) + ' for registry type REG_BINARY, please use an array of numbers')
-			}
-			return value.join(',')
-
-		case 'REG_MULTI_SZ':
-			if (!util.isArray(value)) {
-				throw new Error('invalid value type ' + typeof(value) + ' for registry type REG_BINARY, please use an array of strings')
-			}
-			return value.join(',')
-
-		case 'REG_SZ':
-			if (value === '') {
-				return '\0'
-			}
-			return value
-
-		default:
-			return value
-	}
-}
-
-//TODO: move to helper.js?
-function toCommandArgs(cmd, arch, keys) {
-	let result = baseCommand(cmd, arch)
-	if (typeof keys === 'string') {
-		result.push(keys)
-	} else if (util.isArray(keys)) {
-		result = result.concat(keys)
-	} else {
-		debug('creating command without using keys %s', keys ? keys : '')
-	}
-
-	return result
-}
-
-//TODO: move to helper.js?
-function baseCommand(cmd, arch) {
-
-	let scriptPath
-
-	// test undefined, null and empty string
-	if (externalVBSFolderLocation && typeof(externalVBSFolderLocation) === 'string') {
-		scriptPath = externalVBSFolderLocation
-	} else {
-		scriptPath = path.join(__dirname, 'vbs')
-	}
-
-	return ['//Nologo', path.join(scriptPath, cmd), arch]
+	},
 }

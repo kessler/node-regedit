@@ -1,9 +1,7 @@
 /* eslint-disable max-len, no-unused-expressions */
 
-var should = require('should')
 var execFile = require('../lib/execFile.js')
 var path = require('path')
-var fs = require('fs')
 
 var testScript = path.join(__dirname, 'lib', 'testscript.js')
 
@@ -11,7 +9,7 @@ describe('execFile', function() {
 
 	it('removes all the listeners from stdout/stderr to avoid buffering output, but enjoys all the good cleanup code node.js has to offer', function(done) {
 
-		var child = execFile()('node', [testScript], function(err, stdout, stderr) {
+		execFile()('node', [testScript], function(err, stdout, stderr) {
 			err.should.be.an.Error
 			stdout.should.eql('')
 			stderr.should.eql('')
@@ -25,7 +23,7 @@ describe('execFile', function() {
 			bufferStderr: true,
 		}
 
-		var child = execFile(opts)('node', [testScript], function(err, stdout, stderr) {
+		execFile(opts)('node', [testScript], function(err, stdout, stderr) {
 			err.should.be.an.Error
 			stdout.should.eql('')
 			stderr.should.containEql('throw new Error(\'error\')')
@@ -39,7 +37,7 @@ describe('execFile', function() {
 			bufferStdout: true,
 		}
 
-		var child = execFile(opts)('node', [testScript], function(err, stdout, stderr) {
+		execFile(opts)('node', [testScript], function(err, stdout, stderr) {
 			err.should.be.an.Error
 			stdout.should.eql('123\n')
 			stderr.should.eql('')
@@ -54,7 +52,7 @@ describe('execFile', function() {
 			bufferStderr: true,
 		}
 
-		var child = execFile(opts)('node', [testScript], function(err, stdout, stderr) {
+		execFile(opts)('node', [testScript], function(err, stdout, stderr) {
 			err.should.be.an.Error
 			stdout.should.eql('123\n')
 			stderr.should.containEql('throw new Error(\'error\')')

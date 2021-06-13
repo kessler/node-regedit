@@ -10,7 +10,7 @@ for (var i = 0; i < errors.length; i++) {
 	
 	var result = {
 		error: 'wbem' + splitted[0],
-		code: parseInt(splitted[1]),
+		code: parseInt(splitted[1], 10),
 		description: splitted[2],
 	}
 
