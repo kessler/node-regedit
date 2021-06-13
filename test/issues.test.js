@@ -1,7 +1,6 @@
 // TODO need to find a better way to test the 32bit/64bit specific scenarios
 
 var index = require('../index')
-var should = require('should')
 
 describe('regedit', function() {
 	var baseKey = 'HKCU\\software\\ironSource\\regedit\\issues-test\\'

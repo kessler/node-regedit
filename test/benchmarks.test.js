@@ -1,7 +1,6 @@
-var should = require('should')
 var index = require('../index')
 
-describe.skip('benchmark test', function(done) {
+describe.skip('benchmark test', function() {
 	this.timeout(40000)
 
 	var testSize = 10000
@@ -12,7 +11,7 @@ describe.skip('benchmark test', function(done) {
 	it('create', function(done) {
 
 		console.time('start create')
-		index.createKey(keys, function(err, result) {
+		index.createKey(keys, function(err) {
 			if (err) {
 				return done(err)
 			}
@@ -22,12 +21,12 @@ describe.skip('benchmark test', function(done) {
 	})
 
 	it('test', function(done) {
-		index.createKey(keys, function(err, result) {
+		index.createKey(keys, function(err) {
 			if (err) {
 				return done(err)
 			}
 			console.timeEnd('start create')
-			index.list(baseKey, function(err, result) {
+			index.list(baseKey, function(err) {
 				if (err) {
 					return done(err)
 				}
@@ -37,7 +36,7 @@ describe.skip('benchmark test', function(done) {
 		})
 	})
 
-	beforeEach(function(done) {
+	beforeEach(function() {
 		baseKey = staticBaseKey + Date.now()
 
 		// clear remains of previous tests

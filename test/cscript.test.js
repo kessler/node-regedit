@@ -1,6 +1,5 @@
 /* eslint-disable consistent-this */
 
-var should = require('should')
 var cscript = require('../lib/cscript.js')
 
 describe('cscript', function() {
