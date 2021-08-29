@@ -60,13 +60,13 @@ Sub ListChildrenAsJson(constHive, strSubKey)
 
 	Dim e1: e1 = EnumKey (constHive, strSubKey, arrKeyNames)
 	If e1 <> 0 Then
-		WScript.Quit e1
+    		Err.Raise e1, "ListChildrenAsJson", "Fail"
 	End If
 
 	Dim e2: e2 = EnumValues (constHive, strSubKey, arrValueNames, arrValueTypes)
 
 	If e2 <> 0 Then
-		WScript.Quit e2
+    		Err.Raise e2, "ListChildrenAsJson", "Fail"
 	End If
 
 	' start outputting json to stdout

@@ -25,21 +25,27 @@
 		LoadRegistryImplementationByOSArchitecture()
 	
 		Write "{"
+		On Error Resume Next
 		For v = 1 To args.Count - 1
-			if (v > 1) Then
+			If (v > 1) Then
 				Write ","
 			End If
 			
 			Write """" & JsonSafe(args(v)) & """: "
 			
 			ParseHiveAndSubKey args(v), constHive, strSubKey
-
-			if IsNull(constHive) Then
+			
+			If IsNull(constHive) Then
 				WriteLineErr "unsupported hive " & args(v)
 				WScript.Quit 25122       
 			End If
 
+			Err.Clear
 			ListChildrenAsJson constHive, strSubKey
+			If Err.Number <> 0 Then
+				Write """"""
+				Err.Clear
+			End If
 		Next
 		Write "}"
 	</script>
