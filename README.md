@@ -57,7 +57,7 @@ Lists the direct content of one or more sub keys. Specify an array instead of a 
 
 Given the command:
 ```javascript
-regedit.list(['HKCU\\SOFTWARE', 'HKLM\\SOFTWARE'], function(err, result) {
+regedit.list(['HKCU\\SOFTWARE', 'HKLM\\SOFTWARE', 'HKCU\\IM_FAKE_THEREFOR_I_DONT_EXIST'], function(err, result) {
     ...
 })
 ```
@@ -66,6 +66,7 @@ regedit.list(['HKCU\\SOFTWARE', 'HKLM\\SOFTWARE'], function(err, result) {
 ```javascript
 {
     'HKCU\\SOFTWARE': {
+        exists: true,
         keys: [ 'Google', 'Microsoft', ... more direct sub keys ]
         values: {
             'valueName': {
@@ -76,6 +77,7 @@ regedit.list(['HKCU\\SOFTWARE', 'HKLM\\SOFTWARE'], function(err, result) {
         }
     },
     'HKLM\\SOFTWARE': {
+        exists: true,
         keys: [ 'Google', 'Microsoft', ... more direct sub keys ]
         values: {
             'valueName': {
@@ -84,6 +86,11 @@ regedit.list(['HKCU\\SOFTWARE', 'HKLM\\SOFTWARE'], function(err, result) {
             }
             ... more direct child values of HKLM\\SOFTWARE
         }
+    },
+    'HKCU\\IM_FAKE_THEREFOR_I_DONT_EXIST': {
+        exists: false,
+        keys: [],
+        values: {}
     }
 }
 ```
@@ -231,6 +238,22 @@ For now this is how its going to be, but in the future this will probably change
 ### regedit.deleteValue([String|Array], [Function])
 Deletes one or more values in the registry
 **This operation will mutate the keys array**
+
+## Promises
+To use promises access the function you want through `regedit.promisified`, all function signatures are the same `([String|Array], [Arch (optional)])`
+
+Default arch is agnostic.
+
+### Example: regedit.promisified.list([String|Array], [Arch (optional)])
+```javascript
+try {
+    const registryList = await regedit.promisified.list(['HKCU\\SOFTWARE', 'HKLM\\SOFTWARE', 'HKCU\\IM_FAKE_THEREFOR_I_DONT_EXIST'])
+} catch (e) {
+    console.log('Error while listing keys:', e.message)
+}
+```
+Result and errors should be the same as not promisified.
+
 
 ## Develop
 
