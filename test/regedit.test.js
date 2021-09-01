@@ -25,10 +25,13 @@ describe('regedit', function() {
 
 				var key = result[target]
 
+				key.should.have.property('exists')
+				key.exists.should.eql(true)
+
 				key.should.have.property('keys')
-				key.should.have.property('values')
 				key.keys.map(toLowerCase).should.containEql('policies')
 
+				key.should.have.property('values')
 				key.values.should.have.property('ProgramFilesDir')
 				key.values.ProgramFilesDir.should.have.property('value')
 				key.values.ProgramFilesDir.value.indexOf('C:\\Program Files').should.eql(0)
@@ -49,10 +52,13 @@ describe('regedit', function() {
 
 				var key = result[target]
 
+				key.should.have.property('exists')
+				key.exists.should.eql(true)
+
 				key.should.have.property('keys')
-				key.should.have.property('values')
 				key.keys.map(toLowerCase).should.containEql('policies')
 
+				key.should.have.property('values')
 				key.values.should.have.property('ProgramFilesDir')
 				key.values.ProgramFilesDir.should.have.property('value')
 				key.values.ProgramFilesDir.value.indexOf('C:\\Program Files').should.eql(0)
@@ -72,10 +78,13 @@ describe('regedit', function() {
 
 				var key = result[target]
 
+				key.should.have.property('exists')
+				key.exists.should.eql(true)
+
 				key.should.have.property('keys')
-				key.should.have.property('values')
 				key.keys.map(toLowerCase).should.containEql('policies')
 
+				key.should.have.property('values')
 				key.values.should.have.property('ProgramFilesDir')
 				key.values.ProgramFilesDir.should.have.property('value', 'C:\\Program Files')
 				key.values.ProgramFilesDir.should.have.property('type', 'REG_SZ')
@@ -94,10 +103,13 @@ describe('regedit', function() {
 
 				var key = result[target]
 
+				key.should.have.property('exists')
+				key.exists.should.eql(true)
+
 				key.should.have.property('keys')
-				key.should.have.property('values')
 				key.keys.map(toLowerCase).should.containEql('policies')
 
+				key.should.have.property('values')
 				key.values.should.have.property('ProgramFilesDir')
 				key.values.ProgramFilesDir.should.have.property('value', 'C:\\Program Files')
 				key.values.ProgramFilesDir.should.have.property('type', 'REG_SZ')
@@ -113,10 +125,18 @@ describe('regedit', function() {
 				}
 
 				result.should.have.property('hklm')
+
+				result.hklm.should.have.property('exists')
+				result.hklm.exists.should.eql(true)
+
 				result.hklm.should.have.property('keys')
 				result.hklm.keys.map(toLowerCase).should.containEql('software')
 
 				result.should.have.property('hkcu')
+
+				result.hkcu.should.have.property('exists')
+				result.hkcu.exists.should.eql(true)
+
 				result.hkcu.should.have.property('keys')
 				result.hkcu.keys.map(toLowerCase).should.containEql('software')
 
@@ -131,6 +151,9 @@ describe('regedit', function() {
 				if (err) {
 					return done(err)
 				}
+
+				result[key].should.have.property('exists')
+				result[key].exists.should.eql(true)
 
 				result[key].should.have.property('keys')
 				result[key].keys.map(toLowerCase).should.containEql('preload')
@@ -148,6 +171,9 @@ describe('regedit', function() {
 				if (err) {
 					return done(err)
 				}
+
+				result[key].should.have.property('exists')
+				result[key].exists.should.eql(true)
 
 				result[key].should.have.property('keys')
 				result[key].keys.should.containEql('测试')
@@ -169,6 +195,8 @@ describe('regedit', function() {
 				if (err) {
 					return done(err)
 				}
+				results['HKCR\\Directory\\shell\\cmd\\command'].should.have.property('exists')
+				results['HKCR\\Directory\\shell\\cmd\\command'].exists.should.eql(true)
 				results['HKCR\\Directory\\shell\\cmd\\command'].should.have.property('values')
 				results['HKCR\\Directory\\shell\\cmd\\command'].values.should.have.property('')
 				done()
@@ -780,7 +808,7 @@ describe('regedit', function() {
 								return done(err)
 							}
 
-							result[key + now].should.not.have.property('values')
+							result[key + now].values.should.not.have.property('DeleteMe')
 
 							done()
 						})

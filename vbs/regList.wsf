@@ -40,12 +40,7 @@
 				WScript.Quit 25122       
 			End If
 
-			Err.Clear
 			ListChildrenAsJson constHive, strSubKey
-			If Err.Number <> 0 Then
-				Write """"""
-				Err.Clear
-			End If
 		Next
 		Write "}"
 	</script>

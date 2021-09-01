@@ -57,40 +57,36 @@ End Function
 ' render the child of a sub path strSubKey in hive constHive
 ' as json.
 Sub ListChildrenAsJson(constHive, strSubKey)
+	' start outputting json to stdout
+	Write "{"
 
 	Dim e1: e1 = EnumKey (constHive, strSubKey, arrKeyNames)
 	If e1 <> 0 Then
-    		Err.Raise e1, "ListChildrenAsJson", "Fail"
+		Write """exists"": false,"
+		Dim arrValueNames: arrValueNames = null
+	Else
+		Write """exists"": true,"
+
+		Dim e2: e2 = EnumValues (constHive, strSubKey, arrValueNames, arrValueTypes)
+		If e2 <> 0 Then
+			WScript.Quit e2
+		End If
 	End If
 
-	Dim e2: e2 = EnumValues (constHive, strSubKey, arrValueNames, arrValueTypes)
-
-	If e2 <> 0 Then
-    		Err.Raise e2, "ListChildrenAsJson", "Fail"
-	End If
-
-	' start outputting json to stdout
-	Write "{"
+	Write """keys"": ["
 	If Not IsNull(arrKeyNames) Then
-		Write """keys"": ["
 		For x = 0 To UBound(arrKeyNames)
 			If (x > 0) Then
 				Write ","
 			End If
 	
 			Write """" & JsonSafe(arrKeyNames(x)) & """"
-		Next		
-		Write "]"
+		Next
 	End If
-	
+	Write "],"
 	' TODO: some duplicity of code between the two paths of this condition, this needs to be address at some point
+	Write """values"":{"
 	If Not IsNull(arrValueNames) Then
-
-		If Not IsNull(arrKeyNames) Then
-			Write ","
-		End If
-
-		Write """values"":{"
 		For y = 0 To UBound(arrValueNames)
 			If y > 0 Then
 				Write ","
@@ -103,26 +99,18 @@ Sub ListChildrenAsJson(constHive, strSubKey)
 			GetValueByType constHive, strSubKey, strValueName, intValueType, varValue
 			
 			WriteValue strValueName, intValueType, varValue
-		Next			
-		Write "}"
+		Next
 	Else
 		' fix for keys with only default values in them
 		' see http://stackoverflow.com/questions/8840343/how-to-read-the-default-value-from-registry-in-vbscript
 		GetStringValue constHive, strSubKey, "", strDefaultValue
 
 		If IsNull(strDefaultValue) = false and strDefaultValue <> "" Then
-			If Not IsNull(arrKeyNames) Then
-				Write ","
-			End If
-
-			Write """values"":{"	
 			' write the default value with REG_SZ
 			WriteValue "", 1, strDefaultValue
-			Write "}"
 		End If
 	End If
-
-	Write "}"	
+	Write "}}"	
 End Sub
 
 Sub WriteValue (strValueName, intValueType, varValue)
