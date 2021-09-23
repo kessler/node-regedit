@@ -17,6 +17,7 @@
     "registry"
   ],
   "main": "index.js",
+  "type": "commonjs",
   "types": "./regedit.d.ts",
   "scripts": {
     "lint": "eslint . --fix",
