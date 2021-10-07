@@ -84,7 +84,9 @@ function execute(args, callback, buffersize) {
 			return callback(err)
 		}
 
-		childProcess.execFile(cscript.path(), args, buffersize == undefined ? { maxBuffer: buffersize } : {}, function (err, stdout, stderr) {
+		var cpArgs = buffersize === undefined ? { maxBuffer: buffersize } : {};
+
+		childProcess.execFile(cscript.path(), args, cpArgs, function (err, stdout, stderr) {
 
 			if (err) {
 				if (stdout) {
@@ -468,49 +470,49 @@ module.exports.arch.putValue64 = function (keys, callback, buffersize) {
 }
 
 module.exports.arch.promisified = {
-	list: function (keys) {
+	list: function (keys, buffersize) {
 		return module.exports.promisified.list(keys, OS_ARCH_SPECIFIC, buffersize)
 	},
-	list32: function (keys) {
+	list32: function (keys, buffersize) {
 		return module.exports.promisified.list(keys, OS_ARCH_32BIT, buffersize)
 	},
-	list64: function (keys) {
+	list64: function (keys, buffersize) {
 		return module.exports.promisified.list(keys, OS_ARCH_64BIT, buffersize)
 	},
-	createKey: function (keys) {
+	createKey: function (keys, buffersize) {
 		return module.exports.promisified.createKey(keys, OS_ARCH_SPECIFIC, buffersize)
 	},
-	createKey32: function (keys) {
+	createKey32: function (keys, buffersize) {
 		return module.exports.promisified.createKey(keys, OS_ARCH_32BIT, buffersize)
 	},
-	createKey64: function (keys) {
+	createKey64: function (keys, buffersize) {
 		return module.exports.promisified.createKey(keys, OS_ARCH_64BIT, buffersize)
 	},
-	deleteKey: function (keys) {
+	deleteKey: function (keys, buffersize) {
 		return module.exports.promisified.deleteKey(keys, OS_ARCH_SPECIFIC, buffersize)
 	},
-	deleteKey32: function (keys) {
+	deleteKey32: function (keys, buffersize) {
 		return module.exports.promisified.deleteKey(keys, OS_ARCH_32BIT, buffersize)
 	},
-	deleteKey64: function (keys) {
+	deleteKey64: function (keys, buffersize) {
 		return module.exports.promisified.deleteKey(keys, OS_ARCH_64BIT, buffersize)
 	},
-	deleteValue: function (keys) {
+	deleteValue: function (keys, buffersize) {
 		return module.exports.promisified.deleteValue(keys, OS_ARCH_SPECIFIC, buffersize)
 	},
-	deleteValue32: function (keys) {
+	deleteValue32: function (keys, buffersize) {
 		return module.exports.promisified.deleteValue(keys, OS_ARCH_32BIT, buffersize)
 	},
-	deleteValue64: function (keys) {
+	deleteValue64: function (keys, buffersize) {
 		return module.exports.promisified.deleteValue(keys, OS_ARCH_64BIT, buffersize)
 	},
-	putValue: function (keys) {
+	putValue: function (keys, buffersize) {
 		return module.exports.promisified.putValue(keys, OS_ARCH_SPECIFIC, buffersize)
 	},
-	putValue32: function (keys) {
+	putValue32: function (keys, buffersize) {
 		return module.exports.promisified.putValue(keys, OS_ARCH_32BIT, buffersize)
 	},
-	putValue64: function (keys) {
+	putValue64: function (keys, buffersize) {
 		return module.exports.promisified.putValue(keys, OS_ARCH_64BIT, buffersize)
 	},
 }
