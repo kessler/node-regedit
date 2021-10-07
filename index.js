@@ -84,7 +84,7 @@ function execute(args, callback, buffersize) {
 			return callback(err)
 		}
 
-		var cpArgs = buffersize === undefined ? { maxBuffer: buffersize } : {};
+		var cpArgs = buffersize === undefined ? {} : { maxBuffer: buffersize };
 
 		childProcess.execFile(cscript.path(), args, cpArgs, function (err, stdout, stderr) {
 
