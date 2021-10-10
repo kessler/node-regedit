@@ -17,6 +17,8 @@
     "registry"
   ],
   "main": "index.js",
+  "type": "commonjs",
+  "types": "./regedit.d.ts",
   "scripts": {
     "lint": "eslint . --fix",
     "lint:src": "eslint . --fix --ignore-pattern test/",
