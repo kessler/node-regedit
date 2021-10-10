@@ -40,12 +40,12 @@ let externalVBSFolderLocation
 
 function handleErrorsAndClose(child, callback) {
 	let error
-	child.once('error', function(e) {
+	child.once('error', function (e) {
 		debug('process error %s', e)
 		error = e
 	})
 
-	child.once('close', function(code) {
+	child.once('close', function (code) {
 		debug('process exit with code %d', code)
 
 		if (error) {
@@ -68,19 +68,25 @@ function handleErrorsAndClose(child, callback) {
 	})
 }
 
-function execute(args, callback) {
+function execute(args, callback, buffersize) {
 	if (typeof callback !== 'function') {
 		throw new Error('missing callback')
 	}
 
+	if (typeof buffersize !== 'number' && typeof buffersize !== 'undefined') {
+		throw new Error('invalid buffersize')
+	}
+
 	debug(args)
 
-	cscript.init(function(err) {
+	cscript.init(function (err) {
 		if (err) {
 			return callback(err)
 		}
 
-		childProcess.execFile(cscript.path(), args, function(err, stdout, stderr) {
+		var cpArgs = buffersize === undefined ? {} : { maxBuffer: buffersize };
+
+		childProcess.execFile(cscript.path(), args, cpArgs, function (err, stdout, stderr) {
 
 			if (err) {
 				if (stdout) {
@@ -123,13 +129,19 @@ function execute(args, callback) {
 	})
 }
 
-function spawnEx(args, keys, callback) {
-	cscript.init(function(err) {
+function spawnEx(args, keys, callback, buffersize) {
+	cscript.init(function (err) {
 		if (err) {
 			return callback(err)
 		}
 
 		debug(args)
+
+		var childArgs = { encoding: 'utf8' }
+
+		if (typeof (buffersize) == 'number') {
+			childArgs.bufferSize = buffersize;
+		}
 
 		const child = execFile(cscript.path(), args, { encoding: 'utf8' })
 
@@ -152,13 +164,13 @@ function renderValueByType(value, type) {
 
 		case 'REG_BINARY':
 			if (!util.isArray(value)) {
-				throw new Error('invalid value type ' + typeof(value) + ' for registry type REG_BINARY, please use an array of numbers')
+				throw new Error('invalid value type ' + typeof (value) + ' for registry type REG_BINARY, please use an array of numbers')
 			}
 			return value.join(',')
 
 		case 'REG_MULTI_SZ':
 			if (!util.isArray(value)) {
-				throw new Error('invalid value type ' + typeof(value) + ' for registry type REG_BINARY, please use an array of strings')
+				throw new Error('invalid value type ' + typeof (value) + ' for registry type REG_BINARY, please use an array of strings')
 			}
 			return value.join(',')
 
@@ -178,7 +190,7 @@ function baseCommand(cmd, arch) {
 	let scriptPath
 
 	// test undefined, null and empty string
-	if (externalVBSFolderLocation && typeof(externalVBSFolderLocation) === 'string') {
+	if (externalVBSFolderLocation && typeof (externalVBSFolderLocation) === 'string') {
 		scriptPath = externalVBSFolderLocation
 	} else {
 		scriptPath = path.join(__dirname, 'vbs')
@@ -201,7 +213,7 @@ function toCommandArgs(cmd, arch, keys) {
 	return result
 }
 
-module.exports.setExternalVBSLocation = function(newLocation) {
+module.exports.setExternalVBSLocation = function (newLocation) {
 	if (fs.existsSync(newLocation)) {
 		externalVBSFolderLocation = newLocation
 		return 'Folder found and set'
@@ -210,13 +222,14 @@ module.exports.setExternalVBSLocation = function(newLocation) {
 	return 'Folder not found'
 }
 
-module.exports.list = function(keys, architecture, callback) {
+module.exports.list = function (keys, architecture, callback, buffersize) {
 	//console.log('list with callback will be deprecated in future versions, use list streaming interface')
 
 	if (architecture === undefined) {
 		callback = undefined
 		architecture = OS_ARCH_AGNOSTIC
 	} else if (typeof architecture === 'function') {
+		buffersize = callback
 		callback = architecture
 		architecture = OS_ARCH_AGNOSTIC
 	}
@@ -226,18 +239,18 @@ module.exports.list = function(keys, architecture, callback) {
 	}
 
 	if (typeof callback === 'function') {
-		execute(toCommandArgs('regList.wsf', architecture, keys), callback)
+		execute(toCommandArgs('regList.wsf', architecture, keys), callback, buffersize)
 	} else {
 		const outputStream = through2.obj(helper.vbsOutputTransform)
 
-		cscript.init(function(err) {
+		cscript.init(function (err) {
 			if (err) {
 				return outputStream.emit('error', err)
 			}
 
 			const args = baseCommand('regListStream.wsf', architecture)
 
-			const child = execFile(cscript.path(), args, { encoding: 'utf8' }, function(err) {
+			const child = execFile(cscript.path(), args, { encoding: 'utf8', bufferSize: buffersize }, function (err) {
 				if (err) {
 					outputStream.emit('error', err)
 				}
@@ -256,8 +269,9 @@ module.exports.list = function(keys, architecture, callback) {
 	}
 }
 
-module.exports.createKey = function(keys, architecture, callback) {
+module.exports.createKey = function (keys, architecture, callback, buffersize) {
 	if (typeof architecture === 'function') {
+		buffersize = callback
 		callback = architecture
 		architecture = OS_ARCH_AGNOSTIC
 	}
@@ -268,11 +282,12 @@ module.exports.createKey = function(keys, architecture, callback) {
 
 	const args = baseCommand('regCreateKey.wsf', architecture)
 
-	spawnEx(args, keys, callback)
+	spawnEx(args, keys, callback, buffersize)
 }
 
-module.exports.deleteKey = function(keys, architecture, callback) {
+module.exports.deleteKey = function (keys, architecture, callback, buffersize) {
 	if (typeof architecture === 'function') {
+		buffersize = callback
 		callback = architecture
 		architecture = OS_ARCH_AGNOSTIC
 	}
@@ -283,11 +298,12 @@ module.exports.deleteKey = function(keys, architecture, callback) {
 
 	const args = baseCommand('regDeleteKey.wsf', architecture)
 
-	spawnEx(args, keys, callback)
+	spawnEx(args, keys, callback, buffersize)
 }
 
-module.exports.deleteValue = function(keys, architecture, callback) {
+module.exports.deleteValue = function (keys, architecture, callback, buffersize) {
 	if (typeof architecture === 'function') {
+		buffersize = callback
 		callback = architecture
 		architecture = OS_ARCH_AGNOSTIC
 	}
@@ -298,11 +314,12 @@ module.exports.deleteValue = function(keys, architecture, callback) {
 
 	var args = baseCommand('regDeleteValue.wsf', architecture)
 
-	spawnEx(args, keys, callback)
+	spawnEx(args, keys, callback, buffersize)
 }
 
-module.exports.putValue = function(map, architecture, callback) {
+module.exports.putValue = function (map, architecture, callback, buffersize) {
 	if (typeof architecture === 'function') {
+		buffersize = callback
 		callback = architecture
 		architecture = OS_ARCH_AGNOSTIC
 	}
@@ -329,173 +346,173 @@ module.exports.putValue = function(map, architecture, callback) {
 		}
 	}
 
-	spawnEx(args, values, callback)
+	spawnEx(args, values, callback, buffersize)
 }
 
 module.exports.promisified = {
-	list: function(keys, architecture = OS_ARCH_AGNOSTIC) {
-		return new Promise(function(resolve, reject) {
-			module.exports.list(keys, architecture, function(err, res) {
+	list: function (keys, architecture = OS_ARCH_AGNOSTIC, buffersize) {
+		return new Promise(function (resolve, reject) {
+			module.exports.list(keys, architecture, function (err, res) {
 				if (err) {
 					return reject(err)
-				} 
+				}
 				return resolve(res)
-				
-			})
+
+			}, buffersize)
 		})
 	},
-	createKey: function(keys, architecture = OS_ARCH_AGNOSTIC) {
-		return new Promise(function(resolve, reject) {
-			module.exports.createKey(keys, architecture, function(err) {
+	createKey: function (keys, architecture = OS_ARCH_AGNOSTIC, buffersize) {
+		return new Promise(function (resolve, reject) {
+			module.exports.createKey(keys, architecture, function (err) {
 				if (err) {
 					return reject(err)
-				} 
+				}
 				return resolve()
-				
-			})
+
+			}, buffersize)
 		})
 	},
-	deleteKey: function(keys, architecture = OS_ARCH_AGNOSTIC) {
-		return new Promise(function(resolve, reject) {
-			module.exports.deleteKey(keys, architecture, function(err) {
+	deleteKey: function (keys, architecture = OS_ARCH_AGNOSTIC, buffersize) {
+		return new Promise(function (resolve, reject) {
+			module.exports.deleteKey(keys, architecture, function (err) {
 				if (err) {
 					return reject(err)
-				} 
+				}
 				return resolve()
-				
-			})
+
+			}, buffersize)
 		})
 	},
-	deleteValue: function(keys, architecture = OS_ARCH_AGNOSTIC) {
-		return new Promise(function(resolve, reject) {
-			module.exports.deleteValue(keys, architecture, function(err) {
+	deleteValue: function (keys, architecture = OS_ARCH_AGNOSTIC, buffersize) {
+		return new Promise(function (resolve, reject) {
+			module.exports.deleteValue(keys, architecture, function (err) {
 				if (err) {
 					return reject(err)
-				} 
+				}
 				return resolve()
-				
-			})
+
+			}, buffersize)
 		})
 	},
-	putValue: function(map, architecture = OS_ARCH_AGNOSTIC) {
-		return new Promise(function(resolve, reject) {
-			module.exports.putValue(map, architecture, function(err) {
+	putValue: function (map, architecture = OS_ARCH_AGNOSTIC, buffersize) {
+		return new Promise(function (resolve, reject) {
+			module.exports.putValue(map, architecture, function (err) {
 				if (err) {
 					return reject(err)
-				} 
+				}
 				return resolve()
-				
-			})
+
+			}, buffersize)
 		})
 	},
 }
 
 module.exports.arch = {}
 
-module.exports.arch.list = function(keys, callback) {
-	return module.exports.list(keys, OS_ARCH_SPECIFIC, callback)
+module.exports.arch.list = function (keys, callback, buffersize) {
+	return module.exports.list(keys, OS_ARCH_SPECIFIC, callback, buffersize)
 }
 
-module.exports.arch.list32 = function(keys, callback) {
-	return module.exports.list(keys, OS_ARCH_32BIT, callback)
+module.exports.arch.list32 = function (keys, callback, buffersize) {
+	return module.exports.list(keys, OS_ARCH_32BIT, callback, buffersize)
 }
 
-module.exports.arch.list64 = function(keys, callback) {
-	return module.exports.list(keys, OS_ARCH_64BIT, callback)
+module.exports.arch.list64 = function (keys, callback, buffersize) {
+	return module.exports.list(keys, OS_ARCH_64BIT, callback, buffersize)
 }
 
-module.exports.arch.createKey = function(keys, callback) {
-	return module.exports.createKey(keys, OS_ARCH_SPECIFIC, callback)
+module.exports.arch.createKey = function (keys, callback, buffersize) {
+	return module.exports.createKey(keys, OS_ARCH_SPECIFIC, callback, buffersize)
 }
 
-module.exports.arch.createKey32 = function(keys, callback) {
-	return module.exports.createKey(keys, OS_ARCH_32BIT, callback)
+module.exports.arch.createKey32 = function (keys, callback, buffersize) {
+	return module.exports.createKey(keys, OS_ARCH_32BIT, callback, buffersize)
 }
 
-module.exports.arch.createKey64 = function(keys, callback) {
-	return module.exports.createKey(keys, OS_ARCH_64BIT, callback)
+module.exports.arch.createKey64 = function (keys, callback, buffersize) {
+	return module.exports.createKey(keys, OS_ARCH_64BIT, callback, buffersize)
 }
 
-module.exports.arch.deleteKey = function(keys, callback) {
-	return module.exports.deleteKey(keys, OS_ARCH_SPECIFIC, callback)
+module.exports.arch.deleteKey = function (keys, callback, buffersize) {
+	return module.exports.deleteKey(keys, OS_ARCH_SPECIFIC, callback, buffersize)
 }
 
-module.exports.arch.deleteKey32 = function(keys, callback) {
-	return module.exports.deleteKey(keys, OS_ARCH_32BIT, callback)
+module.exports.arch.deleteKey32 = function (keys, callback, buffersize) {
+	return module.exports.deleteKey(keys, OS_ARCH_32BIT, callback, buffersize)
 }
 
-module.exports.arch.deleteKey64 = function(keys, callback) {
-	return module.exports.deleteKey(keys, OS_ARCH_64BIT, callback)
+module.exports.arch.deleteKey64 = function (keys, callback, buffersize) {
+	return module.exports.deleteKey(keys, OS_ARCH_64BIT, callback, buffersize)
 }
 
-module.exports.arch.deleteValue = function(keys, callback) {
-	return module.exports.deleteValue(keys, OS_ARCH_SPECIFIC, callback)
+module.exports.arch.deleteValue = function (keys, callback, buffersize) {
+	return module.exports.deleteValue(keys, OS_ARCH_SPECIFIC, callback, buffersize)
 }
 
-module.exports.arch.deleteValue32 = function(keys, callback) {
-	return module.exports.deleteValue(keys, OS_ARCH_32BIT, callback)
+module.exports.arch.deleteValue32 = function (keys, callback, buffersize) {
+	return module.exports.deleteValue(keys, OS_ARCH_32BIT, callback, buffersize)
 }
 
-module.exports.arch.deleteValue64 = function(keys, callback) {
-	return module.exports.deleteValue(keys, OS_ARCH_64BIT, callback)
+module.exports.arch.deleteValue64 = function (keys, callback, buffersize) {
+	return module.exports.deleteValue(keys, OS_ARCH_64BIT, callback, buffersize)
 }
 
-module.exports.arch.putValue = function(keys, callback) {
-	return module.exports.putValue(keys, OS_ARCH_SPECIFIC, callback)
+module.exports.arch.putValue = function (keys, callback, buffersize) {
+	return module.exports.putValue(keys, OS_ARCH_SPECIFIC, callback, buffersize)
 }
 
-module.exports.arch.putValue32 = function(keys, callback) {
-	return module.exports.putValue(keys, OS_ARCH_32BIT, callback)
+module.exports.arch.putValue32 = function (keys, callback, buffersize) {
+	return module.exports.putValue(keys, OS_ARCH_32BIT, callback, buffersize)
 }
 
-module.exports.arch.putValue64 = function(keys, callback) {
-	return module.exports.putValue(keys, OS_ARCH_64BIT, callback)
+module.exports.arch.putValue64 = function (keys, callback, buffersize) {
+	return module.exports.putValue(keys, OS_ARCH_64BIT, callback, buffersize)
 }
 
 module.exports.arch.promisified = {
-	list: function(keys) {
-		return module.exports.promisified.list(keys, OS_ARCH_SPECIFIC)
+	list: function (keys, buffersize) {
+		return module.exports.promisified.list(keys, OS_ARCH_SPECIFIC, buffersize)
 	},
-	list32: function(keys) {
-		return module.exports.promisified.list(keys, OS_ARCH_32BIT)
+	list32: function (keys, buffersize) {
+		return module.exports.promisified.list(keys, OS_ARCH_32BIT, buffersize)
 	},
-	list64: function(keys) {
-		return module.exports.promisified.list(keys, OS_ARCH_64BIT)
+	list64: function (keys, buffersize) {
+		return module.exports.promisified.list(keys, OS_ARCH_64BIT, buffersize)
 	},
-	createKey: function(keys) {
-		return module.exports.promisified.createKey(keys, OS_ARCH_SPECIFIC)
+	createKey: function (keys, buffersize) {
+		return module.exports.promisified.createKey(keys, OS_ARCH_SPECIFIC, buffersize)
 	},
-	createKey32: function(keys) {
-		return module.exports.promisified.createKey(keys, OS_ARCH_32BIT)
+	createKey32: function (keys, buffersize) {
+		return module.exports.promisified.createKey(keys, OS_ARCH_32BIT, buffersize)
 	},
-	createKey64: function(keys) {
-		return module.exports.promisified.createKey(keys, OS_ARCH_64BIT)
+	createKey64: function (keys, buffersize) {
+		return module.exports.promisified.createKey(keys, OS_ARCH_64BIT, buffersize)
 	},
-	deleteKey: function(keys) {
-		return module.exports.promisified.deleteKey(keys, OS_ARCH_SPECIFIC)
+	deleteKey: function (keys, buffersize) {
+		return module.exports.promisified.deleteKey(keys, OS_ARCH_SPECIFIC, buffersize)
 	},
-	deleteKey32: function(keys) {
-		return module.exports.promisified.deleteKey(keys, OS_ARCH_32BIT)
+	deleteKey32: function (keys, buffersize) {
+		return module.exports.promisified.deleteKey(keys, OS_ARCH_32BIT, buffersize)
 	},
-	deleteKey64: function(keys) {
-		return module.exports.promisified.deleteKey(keys, OS_ARCH_64BIT)
+	deleteKey64: function (keys, buffersize) {
+		return module.exports.promisified.deleteKey(keys, OS_ARCH_64BIT, buffersize)
 	},
-	deleteValue: function(keys) {
-		return module.exports.promisified.deleteValue(keys, OS_ARCH_SPECIFIC)
+	deleteValue: function (keys, buffersize) {
+		return module.exports.promisified.deleteValue(keys, OS_ARCH_SPECIFIC, buffersize)
 	},
-	deleteValue32: function(keys) {
-		return module.exports.promisified.deleteValue(keys, OS_ARCH_32BIT)
+	deleteValue32: function (keys, buffersize) {
+		return module.exports.promisified.deleteValue(keys, OS_ARCH_32BIT, buffersize)
 	},
-	deleteValue64: function(keys) {
-		return module.exports.promisified.deleteValue(keys, OS_ARCH_64BIT)
+	deleteValue64: function (keys, buffersize) {
+		return module.exports.promisified.deleteValue(keys, OS_ARCH_64BIT, buffersize)
 	},
-	putValue: function(keys) {
-		return module.exports.promisified.putValue(keys, OS_ARCH_SPECIFIC)
+	putValue: function (keys, buffersize) {
+		return module.exports.promisified.putValue(keys, OS_ARCH_SPECIFIC, buffersize)
 	},
-	putValue32: function(keys) {
-		return module.exports.promisified.putValue(keys, OS_ARCH_32BIT)
+	putValue32: function (keys, buffersize) {
+		return module.exports.promisified.putValue(keys, OS_ARCH_32BIT, buffersize)
 	},
-	putValue64: function(keys) {
-		return module.exports.promisified.putValue(keys, OS_ARCH_64BIT)
+	putValue64: function (keys, buffersize) {
+		return module.exports.promisified.putValue(keys, OS_ARCH_64BIT, buffersize)
 	},
 }
