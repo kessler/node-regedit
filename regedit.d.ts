@@ -66,7 +66,12 @@ export function list<K extends string>(keys: readonly K[], architecture: Archite
 
 export function setExternalVBSLocation(newLocation: string): string;
 
-type ErrCallback = (err: Error | undefined) => void;
+interface ErrorWithCode extends Error {
+    code: number;
+    description: string;
+ }
+
+type ErrCallback = (err: ErrorWithCode | undefined) => void;
 
 export function createKey<K extends string>(keys: readonly K[], callback: ErrCallback): void;
 export function createKey<K extends string>(keys: readonly K[], architecture: Architecture, callback?: ErrCallback): void;
