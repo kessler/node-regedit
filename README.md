@@ -123,7 +123,7 @@ For now this is how its going to be, but in the future this will probably change
 ***list with callback api will be deperecated and eventually removed in future versions, take a look at the streaming interface below***
 
 ### regedit.list([String|Array]) - streaming interface
-Same as **regedit.list([String|Array], [Function])** exposes a streaming interface instead of a callback. This is useful for situations where you have a lot of data coming in and out of the list process. Eventually this will completely replace the list() with callback api
+Same as **regedit.list([String|Array], [Function])** exposes a streaming interface instead of a callback. This is useful for situations where you have a lot of data coming in and out of the list process. Using the streaming interface is also important when trying to fetch a large amount of keys from the registry, as it overcomes the limitation of passing data as a command line argument.
 
 **This operation will mutate the keys array**
 
@@ -181,6 +181,38 @@ same as list, only force your system architecture on the registry (select automa
 
 #### regedit.arch.list([String|Array])
 streaming interface, see *regedit.list([String|Array])*
+
+### regedit.listUnexpandedValues([String|Array], [function])
+Lists the values of one or more _value keys_ (or paths as I like to call them) without expanding any embedded environment variables.
+Specify an array instead of a string to query multiple keys in the same run.
+
+Read issue [#40](https://github.com/ironSource/node-regedit/issues/40) on why and when this is needed.
+
+Unlike the rest of this project, which is based on StdRegServ, this API (added on May 2022) uses a wshell object RegRead method. Although it's properly tested, please report any issues asap.
+
+```js
+const regedit = require('./index').promisified
+
+async function main() {
+  const res = await regedit.listUnexpandedValues('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData')
+
+  console.log(JSON.stringify(res, null, '\t'))
+}
+
+main()
+```
+
+*Result* will look like this:
+```json
+[
+  {
+    "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData",
+    "exists": true,
+    "value": "%USERPROFILE%\\AppData\\Roaming"
+  }
+]
+```
+This API also support a streaming interface much like `list` does.
 
 ## Manipulating the registry
 ### regedit.createKey([String|Array], [Function])
