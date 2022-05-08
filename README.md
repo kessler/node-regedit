@@ -4,8 +4,10 @@ Read, Write, List and do all sorts of funky stuff to the windows registry using 
 No pesky native code :-)
 
 ## Install
-[![NPM](https://nodei.co/npm/regedit.png)](https://nodei.co/npm/regedit/)
-[![NPM](https://nodei.co/npm-dl/regedit.png)](https://nodei.co/npm/regedit/)
+
+```
+npm install regedit
+```
 
 ## Example
 ```javascript

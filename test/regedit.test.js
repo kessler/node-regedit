@@ -863,8 +863,8 @@ describe('regedit', function() {
 			})
 		})
 
-    it('has a streaming interface', function(done) {
-      const results = []
+		it('has a streaming interface', function(done) {
+			const results = []
 			const stream = index.listUnexpandedValues([
 				'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData',
 				'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData',
@@ -875,21 +875,21 @@ describe('regedit', function() {
 				results.should.deepEqual([{
 					path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData',
 					exists: true,
-					value: '%USERPROFILE%\\AppData\\Roaming'
+					value: '%USERPROFILE%\\AppData\\Roaming',
 				},
 				{
 					path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData',
 					exists: true,
-					value: '%USERPROFILE%\\AppData\\Roaming'
+					value: '%USERPROFILE%\\AppData\\Roaming',
 				},
 				{
 					path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData',
 					exists: true,
-					value: '%USERPROFILE%\\AppData\\Roaming'
+					value: '%USERPROFILE%\\AppData\\Roaming',
 				}])
 
 				done()
 			})
-    })
+		})
 	})
 })
