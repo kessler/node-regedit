@@ -114,12 +114,12 @@ Function GetOSArchitecture()
 	
 End Function
 
-Function JsonSafe(outStrText)
-	If outStrText = "" Then
+Function JsonSafe(inStrText)
+	If inStrText = "" Then
 		JsonSafe = ""
 		Exit Function 
 	End If
-		
+	Dim outStrText: outStrText = inStrText
 	outStrText = Replace(outStrText, "\", "\\")
 	outStrText = Replace(outStrText, vbcrlf, "\\r\\n")
 	outStrText = Replace(outStrText, vblf, "\\n")
