@@ -335,7 +335,7 @@ describe('regedit', function() {
 						return done(err)
 					}
 
-					result[key].keys.should.containEql(now)
+          result[key].keys.should.containEql(now)
 
 					index.deleteKey(key + now, function(err) {
 						if (err) {
@@ -347,7 +347,7 @@ describe('regedit', function() {
 								return done(err)
 							}
 
-							result1.should.not.containEql(now)
+              result1[key].keys.should.not.containEql(now)
 							done()
 						})
 					})
@@ -378,7 +378,7 @@ describe('regedit', function() {
 								return done(err)
 							}
 
-							result1.should.not.containEql(now)
+							result1[key].keys.should.not.containEql(now)
 							done()
 						})
 					})
@@ -409,7 +409,7 @@ describe('regedit', function() {
 								return done(err)
 							}
 
-							result1.should.not.containEql(now)
+							result1[key].keys.should.not.containEql(now)
 							done()
 						})
 					})
@@ -440,7 +440,7 @@ describe('regedit', function() {
 								return done(err)
 							}
 
-							result1.should.not.containEql(now)
+							result1[key].keys.should.not.containEql(now)
 							done()
 						})
 					})
