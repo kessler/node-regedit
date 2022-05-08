@@ -9,28 +9,31 @@ No pesky native code :-)
 
 ## Example
 ```javascript
-var regedit = require('regedit')
+const regedit = require('regedit').promisified
 
-regedit.list('HKCU\\SOFTWARE', function(err, result) {
-    ...
-})
+async function main() {
+  const listResult = await regedit.list('HKCU\\SOFTWARE')
+  console.log(listResult)
 
-regedit.putValue({
+  await regedit.createKey(['HKLM\\SOFTWARE\\MyApp2', 'HKCU\\SOFTWARE\\MyApp'])
+  await regedit.putValue({
     'HKCU\\SOFTWARE\\MyApp': {
-        'Company': {
+        Company: {
             value: 'Moo corp',
             type: 'REG_SZ'
-        },
-        'Version': { ... }
+        }
     },
-    'HKLM\\SOFTWARE\\MyApp2': { ... }
-}, function(err) {
-    ...
-})
+    'HKLM\\SOFTWARE\\MyApp2': { 
+      test: {
+        value: '123',
+        type: 'REG_SZ'
+      } 
+    }
+  })
+}
 
-regedit.createKey(['HKLM\\SOFTWARE\\Moo', 'HKCU\\SOFTWARE\\Foo'], function(err) {
-    ...
-})
+main()
+
 ```
 #### Friendly warning regarding 32bit and 64bit OS / Process
 When launching a 32bit application in 64bit environment, some of your paths will be relative to wow6432node. Things might get a little unexpected if you try to find something you thought was in HKLM\Software when in fact it is located at HKLM\Software\wow6432node. To overcome this the [arch](#regeditarchlist32stringarray-function) methods were added.
@@ -40,7 +43,17 @@ Further reading [here](https://msdn.microsoft.com/en-us/library/windows/desktop/
 #### A note about Electron
 This software uses Windows Script Host to read and write to the registry. For that purpose, it will execute [`.wsf`](https://github.com/ironSource/node-regedit/tree/master/vbs) files. When packaging the app's dependencies with ASAR, `node-regedit` will not be able to access the windows script files, because they are bundled in a single ASAR file. Therefore it is necessary to store the `.wsf` files elsewhere, outside of the packaged asar file. You can set your custom location for the files with `setExternalVBSLocation(location)`:
 
+#### callbacks and promise based APIs
+regedit was originally written using callbacks, but a promise based API was added later:
+
+```js
+// callback api
+const regedit = require('regedit')
+// promise api
+const promisifiedRegedit = require('regedit').promisified
 ```
+
+```js
 // Assuming the files lie in <app>/resources/my-location
 const vbsDirectory = path.join(path.dirname(electron.remote.app.getPath('exe')), './resources/my-location');
 regedit.setExternalVBSLocation(vbsDirectory);
