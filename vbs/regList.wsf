@@ -31,9 +31,11 @@
 				Write ","
 			End If
 			
-			Write """" & JsonSafe(args(v)) & """: "
+			Dim key: key = trim(args(v))
+
+			Write """" & JsonSafe(key) & """: "
 			
-			ParseHiveAndSubKey args(v), constHive, strSubKey
+			ParseHiveAndSubKey key, constHive, strSubKey
 			
 			If IsNull(constHive) Then
 				WriteLineErr "unsupported hive " & args(v)
