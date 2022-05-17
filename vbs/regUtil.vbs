@@ -145,27 +145,27 @@ Sub ParseHiveAndSubKey(strRawKey, outConstHive, outStrSubKey)
 End Sub
 
 Function ArrayRemoveAt(arr, pos)
-  Dim i
-  If IsArray(arr) Then
-    If pos >= 0 And pos <= UBound(arr) Then
-      For i = pos To UBound(arr) - 1
-        arr(i) = arr(i + 1)
-      Next
-      ReDim Preserve arr(UBound(arr) - 1)
-    End If
-  End If
+	Dim i
+	If IsArray(arr) Then
+		If pos >= 0 And pos <= UBound(arr) Then
+			For i = pos To UBound(arr) - 1
+				arr(i) = arr(i + 1)
+			Next
+			ReDim Preserve arr(UBound(arr) - 1)
+		End If
+	End If
 End Function
 
 Sub ParseHiveAndSubKeyAndValue(strRawKey, outConstHive, outStrSubKey, outStrValue)
 	' split into two parts to deduce the hive and the sub key
 	arrSplitted = Split(strRawKey, "\", -1, 1)
-
-	If UBound(arrSplitted) > 0 Then
+  
+  If UBound(arrSplitted) > 0 Then
 		strHive = arrSplitted(0)
-        outStrValue = arrSplitted(UBound(arrSplitted))
-        test = ArrayRemoveAt(arrSplitted, UBound(arrSplitted))
-        test = ArrayRemoveAt(arrSplitted, 0)
-        outStrSubKey = Join(arrSplitted, "\")
+		outStrValue = arrSplitted(UBound(arrSplitted))
+		test = ArrayRemoveAt(arrSplitted, UBound(arrSplitted))
+		test = ArrayRemoveAt(arrSplitted, 0)
+		outStrSubKey = Join(arrSplitted, "\")
 	Else
 		strHive = strRawKey
 		outStrSubKey = ""

@@ -227,33 +227,34 @@ module.exports.list = function(keys, architecture, callback) {
 
 	if (typeof callback === 'function') {
 		execute(toCommandArgs('regList.wsf', architecture, keys), callback)
-	} else {
-		const outputStream = through2.obj(helper.vbsOutputTransform)
+		return
+	}
 
-		cscript.init(function(err) {
+	const outputStream = through2.obj(helper.vbsOutputTransform)
+
+	cscript.init(function(err) {
+		if (err) {
+			return outputStream.emit('error', err)
+		}
+
+		const args = baseCommand('regListStream.wsf', architecture)
+
+		const child = execFile(cscript.path(), args, { encoding: 'utf8' }, function(err) {
 			if (err) {
-				return outputStream.emit('error', err)
+				outputStream.emit('error', err)
 			}
-
-			const args = baseCommand('regListStream.wsf', architecture)
-
-			const child = execFile(cscript.path(), args, { encoding: 'utf8' }, function(err) {
-				if (err) {
-					outputStream.emit('error', err)
-				}
-			})
-
-			child.stderr.pipe(process.stderr)
-
-			const slicer = new StreamSlicer({ sliceBy: helper.WIN_EOL })
-
-			child.stdout.pipe(slicer).pipe(outputStream)
-
-			helper.writeArrayToStream(keys, child.stdin)
 		})
 
-		return outputStream
-	}
+		child.stderr.pipe(process.stderr)
+
+		const slicer = new StreamSlicer({ sliceBy: helper.WIN_EOL })
+
+		child.stdout.pipe(slicer).pipe(outputStream)
+
+		helper.writeArrayToStream(keys, child.stdin)
+	})
+
+	return outputStream
 }
 
 module.exports.createKey = function(keys, architecture, callback) {
@@ -332,6 +333,51 @@ module.exports.putValue = function(map, architecture, callback) {
 	spawnEx(args, values, callback)
 }
 
+module.exports.listUnexpandedValues = function(valuePaths, architecture, callback) {
+	if (architecture === undefined) {
+		callback = undefined
+		architecture = OS_ARCH_AGNOSTIC
+	} else if (typeof architecture === 'function') {
+		callback = architecture
+		architecture = OS_ARCH_AGNOSTIC
+	}
+	  
+	if (typeof valuePaths === 'string') {
+		valuePaths = [valuePaths]
+	}
+
+	if (typeof callback === 'function') {
+		execute(toCommandArgs('wsRegReadList.wsf', architecture, valuePaths), callback)
+		return
+	}
+
+	const outputStream = through2.obj(helper.vbsOutputTransform)
+
+	cscript.init(function(err) {
+		if (err) {
+			return outputStream.emit('error', err)
+		}
+
+		const args = baseCommand('wsRegReadListStream.wsf', architecture)
+
+		const child = execFile(cscript.path(), args, { encoding: 'utf8' }, function(err) {
+			if (err) {
+				outputStream.emit('error', err)
+			}
+		})
+
+		child.stderr.pipe(process.stderr)
+
+		const slicer = new StreamSlicer({ sliceBy: helper.WIN_EOL })
+
+		child.stdout.pipe(slicer).pipe(outputStream)
+
+		helper.writeArrayToStream(valuePaths, child.stdin)
+	})
+
+	return outputStream
+}
+
 module.exports.promisified = {
 	list: function(keys, architecture = OS_ARCH_AGNOSTIC) {
 		return new Promise(function(resolve, reject) {
@@ -339,8 +385,17 @@ module.exports.promisified = {
 				if (err) {
 					return reject(err)
 				} 
-				return resolve(res)
-				
+				return resolve(res)	
+			})
+		})
+	},
+	listUnexpandedValues: function(valuePaths, architecture = OS_ARCH_AGNOSTIC) {
+		return new Promise(function(resolve, reject) {
+			module.exports.listUnexpandedValues(valuePaths, architecture, function(err, res) {
+				if (err) {
+					return reject(err)
+				} 
+				return resolve(res)	
 			})
 		})
 	},
@@ -351,7 +406,6 @@ module.exports.promisified = {
 					return reject(err)
 				} 
 				return resolve()
-				
 			})
 		})
 	},
@@ -362,7 +416,6 @@ module.exports.promisified = {
 					return reject(err)
 				} 
 				return resolve()
-				
 			})
 		})
 	},
@@ -373,7 +426,6 @@ module.exports.promisified = {
 					return reject(err)
 				} 
 				return resolve()
-				
 			})
 		})
 	},
@@ -384,7 +436,6 @@ module.exports.promisified = {
 					return reject(err)
 				} 
 				return resolve()
-				
 			})
 		})
 	},
@@ -402,6 +453,18 @@ module.exports.arch.list32 = function(keys, callback) {
 
 module.exports.arch.list64 = function(keys, callback) {
 	return module.exports.list(keys, OS_ARCH_64BIT, callback)
+}
+
+module.exports.arch.listUnexpandedValues = function(valuePaths, callback) {
+	return module.exports.listUnexpandedValues(valuePaths, OS_ARCH_SPECIFIC, callback)
+}
+
+module.exports.arch.listUnexpandedValues32 = function(valuePaths, callback) {
+	return module.exports.listUnexpandedValues(valuePaths, OS_ARCH_32BIT, callback)
+}
+
+module.exports.arch.listUnexpandedValues64 = function(valuePaths, callback) {
+	return module.exports.listUnexpandedValues(valuePaths, OS_ARCH_64BIT, callback)
 }
 
 module.exports.arch.createKey = function(keys, callback) {
@@ -461,6 +524,15 @@ module.exports.arch.promisified = {
 	},
 	list64: function(keys) {
 		return module.exports.promisified.list(keys, OS_ARCH_64BIT)
+	},
+	listUnexpandedValues: function(valuePaths) {
+		return module.exports.promisified.listUnexpandedValues(valuePaths, OS_ARCH_SPECIFIC)
+	},
+	listUnexpandedValues32: function(valuePaths) {
+		return module.exports.promisified.listUnexpandedValues(valuePaths, OS_ARCH_32BIT)
+	},
+	listUnexpandedValues64: function(valuePaths) {
+		return module.exports.promisified.listUnexpandedValues(valuePaths, OS_ARCH_64BIT)
 	},
 	createKey: function(keys) {
 		return module.exports.promisified.createKey(keys, OS_ARCH_SPECIFIC)

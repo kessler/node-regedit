@@ -4,18 +4,18 @@
 	<script language="VBScript">
 		usage = "usage: cscript regPutValue.wsf architecture" & vbNewLine _
 					& "types: REG_SZ, REG_EXPAND_SZ, REG_BINARY, REG_DWORD, REG_MULTI_SZ, REG_QWORD"
-	
+
 		CheckZeroArgs(usage)
 		DetermineOSArchitecture()
 		LoadRegistryImplementationByOSArchitecture()
-		
+
 		ReadCount = 0
 		Dim lineArgs(3)
 
 		Do While Not stdin.AtEndOfLine
 			strLine = stdin.ReadLine()
 			strLine = unescape(trim(strLine))
-			
+
 			If IsNull(strLine) or strLine = "" Then
 				WScript.Quit 25127
 			End If

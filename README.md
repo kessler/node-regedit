@@ -4,33 +4,38 @@ Read, Write, List and do all sorts of funky stuff to the windows registry using 
 No pesky native code :-)
 
 ## Install
-[![NPM](https://nodei.co/npm/regedit.png)](https://nodei.co/npm/regedit/)
-[![NPM](https://nodei.co/npm-dl/regedit.png)](https://nodei.co/npm/regedit/)
+
+```
+npm install regedit
+```
 
 ## Example
 ```javascript
-var regedit = require('regedit')
+const regedit = require('regedit').promisified
 
-regedit.list('HKCU\\SOFTWARE', function(err, result) {
-    ...
-})
+async function main() {
+  const listResult = await regedit.list('HKCU\\SOFTWARE')
+  console.log(listResult)
 
-regedit.putValue({
+  await regedit.createKey(['HKLM\\SOFTWARE\\MyApp2', 'HKCU\\SOFTWARE\\MyApp'])
+  await regedit.putValue({
     'HKCU\\SOFTWARE\\MyApp': {
-        'Company': {
+        Company: {
             value: 'Moo corp',
             type: 'REG_SZ'
-        },
-        'Version': { ... }
+        }
     },
-    'HKLM\\SOFTWARE\\MyApp2': { ... }
-}, function(err) {
-    ...
-})
+    'HKLM\\SOFTWARE\\MyApp2': { 
+      test: {
+        value: '123',
+        type: 'REG_SZ'
+      } 
+    }
+  })
+}
 
-regedit.createKey(['HKLM\\SOFTWARE\\Moo', 'HKCU\\SOFTWARE\\Foo'], function(err) {
-    ...
-})
+main()
+
 ```
 #### Friendly warning regarding 32bit and 64bit OS / Process
 When launching a 32bit application in 64bit environment, some of your paths will be relative to wow6432node. Things might get a little unexpected if you try to find something you thought was in HKLM\Software when in fact it is located at HKLM\Software\wow6432node. To overcome this the [arch](#regeditarchlist32stringarray-function) methods were added.
@@ -40,7 +45,17 @@ Further reading [here](https://msdn.microsoft.com/en-us/library/windows/desktop/
 #### A note about Electron
 This software uses Windows Script Host to read and write to the registry. For that purpose, it will execute [`.wsf`](https://github.com/ironSource/node-regedit/tree/master/vbs) files. When packaging the app's dependencies with ASAR, `node-regedit` will not be able to access the windows script files, because they are bundled in a single ASAR file. Therefore it is necessary to store the `.wsf` files elsewhere, outside of the packaged asar file. You can set your custom location for the files with `setExternalVBSLocation(location)`:
 
+#### callbacks and promise based APIs
+regedit was originally written using callbacks, but a promise based API was added later:
+
+```js
+// callback api
+const regedit = require('regedit')
+// promise api
+const promisifiedRegedit = require('regedit').promisified
 ```
+
+```js
 // Assuming the files lie in <app>/resources/my-location
 const vbsDirectory = path.join(path.dirname(electron.remote.app.getPath('exe')), './resources/my-location');
 regedit.setExternalVBSLocation(vbsDirectory);
@@ -110,7 +125,7 @@ For now this is how its going to be, but in the future this will probably change
 ***list with callback api will be deperecated and eventually removed in future versions, take a look at the streaming interface below***
 
 ### regedit.list([String|Array]) - streaming interface
-Same as **regedit.list([String|Array], [Function])** exposes a streaming interface instead of a callback. This is useful for situations where you have a lot of data coming in and out of the list process. Eventually this will completely replace the list() with callback api
+Same as **regedit.list([String|Array], [Function])** exposes a streaming interface instead of a callback. This is useful for situations where you have a lot of data coming in and out of the list process. Using the streaming interface is also important when trying to fetch a large amount of keys from the registry, as it overcomes the limitation of passing data as a command line argument.
 
 **This operation will mutate the keys array**
 
@@ -168,6 +183,38 @@ same as list, only force your system architecture on the registry (select automa
 
 #### regedit.arch.list([String|Array])
 streaming interface, see *regedit.list([String|Array])*
+
+### regedit.listUnexpandedValues([String|Array], [function])
+Lists the values of one or more _value keys_ (or paths as I like to call them) without expanding any embedded environment variables.
+Specify an array instead of a string to query multiple keys in the same run.
+
+Read issue [#40](https://github.com/ironSource/node-regedit/issues/40) on why and when this is needed.
+
+Unlike the rest of this project, which is based on StdRegServ, this API (added on May 2022) uses a wshell object RegRead method. Although it's properly tested, please report any issues asap.
+
+```js
+const regedit = require('./index').promisified
+
+async function main() {
+  const res = await regedit.listUnexpandedValues('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData')
+
+  console.log(JSON.stringify(res, null, '\t'))
+}
+
+main()
+```
+
+*Result* will look like this:
+```json
+[
+  {
+    "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData",
+    "exists": true,
+    "value": "%USERPROFILE%\\AppData\\Roaming"
+  }
+]
+```
+This API also support a streaming interface much like `list` does.
 
 ## Manipulating the registry
 ### regedit.createKey([String|Array], [Function])

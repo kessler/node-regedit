@@ -2,7 +2,7 @@
 '	Lists the sub keys and values of a given registry key, this script is slightly different
 '	than regList because it reads stdin for the keys to list
 '
-'	cscript regList.wsg HKLM\Software
+'	echo HKLM\Software | cscript regListStream.wsf A
 '
 '	Will Yield:
 '
@@ -21,7 +21,7 @@
 	<script language="VBScript" src="util.vbs" />
 	<script language="VBScript" src="regUtil.vbs" />
 	<script language="VBScript">		
-		CheckZeroArgs("usage: cscript regList.wsf architecture")
+		CheckZeroArgs("usage: echo KEY | cscript regListStream.wsf architecture")
 		DetermineOSArchitecture()
 		LoadRegistryImplementationByOSArchitecture()
 		

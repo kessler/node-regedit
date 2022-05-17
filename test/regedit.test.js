@@ -347,7 +347,7 @@ describe('regedit', function() {
 								return done(err)
 							}
 
-							result1.should.not.containEql(now)
+							result1[key].keys.should.not.containEql(now)
 							done()
 						})
 					})
@@ -378,7 +378,7 @@ describe('regedit', function() {
 								return done(err)
 							}
 
-							result1.should.not.containEql(now)
+							result1[key].keys.should.not.containEql(now)
 							done()
 						})
 					})
@@ -409,7 +409,7 @@ describe('regedit', function() {
 								return done(err)
 							}
 
-							result1.should.not.containEql(now)
+							result1[key].keys.should.not.containEql(now)
 							done()
 						})
 					})
@@ -440,7 +440,7 @@ describe('regedit', function() {
 								return done(err)
 							}
 
-							result1.should.not.containEql(now)
+							result1[key].keys.should.not.containEql(now)
 							done()
 						})
 					})
@@ -784,7 +784,7 @@ describe('regedit', function() {
 			index.createKey(key + now, done)
 		})
 
-		it('', function(done) {
+		it('Agnostic', function(done) {
 			index.putValue(map, function(err) {
 				if (err) {
 					return done(err)
@@ -817,7 +817,7 @@ describe('regedit', function() {
 			})
 		})
 	
-		it('S', function(done) {
+		it('Specific', function(done) {
 			genericTest('', done)
 		})
 
@@ -827,6 +827,69 @@ describe('regedit', function() {
 
 		it('64bit', function(done) {
 			genericTest('64', done)
+		})
+	})
+
+	describe('listUnexpandedValues', function () {
+		it('reads values without expanding environment variables embedded in them', function(done) {
+			index.listUnexpandedValues('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData', function(err, result) {
+				if (err) {
+					return done(err)
+				}
+
+				result.should.deepEqual([{
+					path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData',
+					exists: true,
+					value: '%USERPROFILE%\\AppData\\Roaming',
+				}])
+
+				done()
+			})
+		})
+
+		it('does not fail for values that dont exist', function(done) {
+			index.listUnexpandedValues('HKCU\\Software\\Microsoft\\blabla', function(err, result) {
+				if (err) {
+					return done(err)
+				}
+
+				result.should.deepEqual([{
+					path: 'HKCU\\Software\\Microsoft\\blabla',
+					exists: false,
+					value: '',
+				}])
+
+				done()
+			})
+		})
+
+		it('has a streaming interface', function(done) {
+			const results = []
+			const stream = index.listUnexpandedValues([
+				'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData',
+				'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData',
+				'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData',
+			]).on('data', function (result) {
+				results.push(result)
+			}).on('end', function () {
+				results.should.deepEqual([{
+					path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData',
+					exists: true,
+					value: '%USERPROFILE%\\AppData\\Roaming',
+				},
+				{
+					path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData',
+					exists: true,
+					value: '%USERPROFILE%\\AppData\\Roaming',
+				},
+				{
+					path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData',
+					exists: true,
+					value: '%USERPROFILE%\\AppData\\Roaming',
+				}])
+
+				done()
+			})
 		})
 	})
 })

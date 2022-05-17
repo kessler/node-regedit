@@ -1,6 +1,6 @@
 {
   "name": "regedit",
-  "version": "5.0.0",
+  "version": "5.1.1",
   "description": "Read, Write, List and do all sorts of funky stuff to the windows registry using node.js and windows script host",
   "author": "Yaniv Kessler",
   "homepage": "https://github.com/ironSource/node-regedit",
@@ -33,9 +33,9 @@
     "through2": "^0.6.3"
   },
   "devDependencies": {
-    "eslint": "^4.18.2",
+    "eslint": "^8.15.0",
     "husky": "^0.13.4",
-    "mocha": "^5.2.0",
-    "should": "^4.4.2"
+    "mocha": "^10.0.0",
+    "should": "^13.2.3"
   }
 }

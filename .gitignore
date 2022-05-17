@@ -28,3 +28,7 @@ node_modules
 # see https://github.com/substack/browserify-handbook#organizing-modules
 node_modules/*
 !node_modules/app
+
+# the ultimate 1.js! (and variants)
+1.js
+vbs/1.wsf
