@@ -1,4 +1,5 @@
 import type { Readable } from 'stream';
+import type { ErrorWithCode } from './errors';
 
 export interface REG_SZ_Value {
     value: string;
@@ -155,11 +156,6 @@ export function listUnexpandedValues<K extends string>(keys: readonly K[], archi
 export type FOLDER_FOUND = 'Folder found and set';
 export type FOLDER_NOT_FOUND = 'Folder not found';
 export function setExternalVBSLocation(newLocation: string): FOLDER_FOUND | FOLDER_NOT_FOUND;
-
-interface ErrorWithCode extends Error {
-    code: number;
-    description: string;
-}
 
 type ErrCallback = (err: ErrorWithCode | undefined) => void;
 
