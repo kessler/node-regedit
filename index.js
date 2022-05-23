@@ -135,7 +135,7 @@ function spawnEx(args, keys, callback) {
 
 		handleErrorsAndClose(child, callback)
 
-		helper.writeArrayToStream(keys, child.stdin)
+		helper.writeArrayToStream(keys.entries(), child.stdin)
 	})
 }
 
@@ -251,7 +251,7 @@ module.exports.list = function(keys, architecture, callback) {
 
 		child.stdout.pipe(slicer).pipe(outputStream)
 
-		helper.writeArrayToStream(keys, child.stdin)
+		helper.writeArrayToStream(keys.entries(), child.stdin)
 	})
 
 	return outputStream
@@ -320,11 +320,10 @@ module.exports.putValue = function(map, architecture, callback) {
 				if (keyValues.hasOwnProperty(valueName)) {
 					const entry = keyValues[valueName]
 
-					// helper writes the array to the stream in reversed order
-					values.push(entry.type)
-					values.push(renderValueByType(entry.value, entry.type))
-					values.push(valueName)
 					values.push(key)
+					values.push(valueName)
+					values.push(renderValueByType(entry.value, entry.type))
+					values.push(entry.type)
 				}
 			}
 		}
@@ -372,7 +371,7 @@ module.exports.listUnexpandedValues = function(valuePaths, architecture, callbac
 
 		child.stdout.pipe(slicer).pipe(outputStream)
 
-		helper.writeArrayToStream(valuePaths, child.stdin)
+		helper.writeArrayToStream(valuePaths.entries(), child.stdin)
 	})
 
 	return outputStream
