@@ -165,6 +165,9 @@ export function createKey<K extends string>(keys: readonly K[], architecture: Ar
 export function deleteKey(keys: readonly string[], callback: ErrCallback): void;
 export function deleteKey(keys: readonly string[], architecture: Architecture, callback?: ErrCallback): void;
 
+export function deleteValue(keys: readonly string[], callback: ErrCallback): void;
+export function deleteValue(keys: readonly string[], architecture: Architecture, callback?: ErrCallback): void;
+
 export function putValue(map: RegistryItemPutCollection, callback: ErrCallback): void;
 export function putValue(map: RegistryItemPutCollection, architecture: Architecture, callback?: ErrCallback): void;
 
@@ -181,6 +184,9 @@ export namespace arch {
     export function deleteKey(keys: readonly string[], callback: ErrCallback): void;
     export function deleteKey32(keys: readonly string[], callback: ErrCallback): void;
     export function deleteKey64(keys: readonly string[], callback: ErrCallback): void;
+    export function deleteValue(keys: readonly string[], callback: ErrCallback): void;
+    export function deleteValue32(keys: readonly string[], callback: ErrCallback): void;
+    export function deleteValue64(keys: readonly string[], callback: ErrCallback): void;
     export function putValue(map: RegistryItemPutCollection, callback: ErrCallback): void;
     export function putValue32(map: RegistryItemPutCollection, callback: ErrCallback): void;
     export function putValue64(map: RegistryItemPutCollection, callback: ErrCallback): void;
@@ -195,6 +201,8 @@ export namespace promisified {
     export function createKey(keys: readonly string[], architecture: Architecture): Promise<void>;
     export function deleteKey(keys: readonly string[]): Promise<void>;
     export function deleteKey(keys: readonly string[], architecture: Architecture): Promise<void>;
+    export function deleteValue(keys: readonly string[]): Promise<void>;
+    export function deleteValue(keys: readonly string[], architecture: Architecture): Promise<void>;
     export function putValue(map: RegistryItemPutCollection): Promise<void>;
     export function putValue(map: RegistryItemPutCollection, architecture: Architecture): Promise<void>;
 
@@ -211,6 +219,9 @@ export namespace promisified {
         export function deleteKey(keys: readonly string[]): Promise<void>;
         export function deleteKey32(keys: readonly string[]): Promise<void>;
         export function deleteKey64(keys: readonly string[]): Promise<void>;
+        export function deleteValue(keys: readonly string[]): Promise<void>;
+        export function deleteValue32(keys: readonly string[]): Promise<void>;
+        export function deleteValue64(keys: readonly string[]): Promise<void>;
         export function putValue(map: RegistryItemPutCollection): Promise<void>;
         export function putValue32(map: RegistryItemPutCollection): Promise<void>;
         export function putValue64(map: RegistryItemPutCollection): Promise<void>;
