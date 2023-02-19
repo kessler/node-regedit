@@ -24,7 +24,7 @@
     "lint:src": "eslint . --fix --ignore-pattern test/",
     "lint:test": "eslint test --fix",
     "test": "mocha -R spec",
-    
+    "prepush": "npm run lint"
   },
   "dependencies": {
     "debug": "^4.1.0",
