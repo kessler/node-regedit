@@ -97,9 +97,21 @@ Function GetOSArchitecture()
 	Set ObjWMI = GetObject("winmgmts:\Root\CIMV2") 
 	Set ColSettings = ObjWMI.ExecQuery ("SELECT DataWidth, AddressWidth, Architecture FROM Win32_Processor") 
 
-	' TODO: I make two assumptions here: 
+	' I make two assumptions here: 
 	' 1. Eveyone will have CPU0 device
 	' 2. There is only one cpu defined in the wmi database (and if not, then they are all of the same architecture)
+	' 
+	' from: https://learn.microsoft.com/en-us/windows/win32/cimwin32prov/win32-processor
+	' Architecture values:
+	' x86 (0)
+	' MIPS (1)
+	' Alpha (2)
+	' PowerPC (3)
+	' ARM (5)
+	' ia64 (6)
+	' x64 (9)
+	' ARM64 (12)
+
 	Set ObjProcessor = ColSettings.Item("Win32_Processor.DeviceID=""CPU0""")
 
 	If ObjProcessor.Architecture = 0 AND ObjProcessor.AddressWidth = 32 Then 
@@ -108,7 +120,10 @@ Function GetOSArchitecture()
 		GetOSArchitecture = 32
 	ElseIf (ObjProcessor.Architecture = 6 OR ObjProcessor.Architecture = 9) AND ObjProcessor.DataWidth = 64 AND ObjProcessor.AddressWidth = 64 Then 
 		GetOSArchitecture = 64
-	Else		
+	' special case (could be included in the statements above) for Windows VM on Apple Silicon, tested only on parallels
+	ElseIf ObjProcessor.Architecture = 12 AND ObjProcessor.DataWidth = 64 AND ObjProcessor.AddressWidth = 64 Then
+		GetOSArchitecture = 64
+	Else
 		GetOSArchitecture = -1
 	End If 
 	
