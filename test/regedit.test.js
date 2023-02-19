@@ -832,7 +832,8 @@ describe('regedit', function() {
 
 	describe('listUnexpandedValues', function () {
 		it('reads values without expanding environment variables embedded in them', function(done) {
-			index.listUnexpandedValues('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData', function(err, result) {
+			const key = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\AppData'
+			index.listUnexpandedValues(key, function(err, result) {
 				if (err) {
 					return done(err)
 				}
