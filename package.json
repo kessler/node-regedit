@@ -3,14 +3,14 @@
   "version": "5.1.2",
   "description": "Read, Write, List and do all sorts of funky stuff to the windows registry using node.js and windows script host",
   "author": "Yaniv Kessler",
-  "homepage": "https://github.com/ironSource/node-regedit",
+  "homepage": "https://github.com/kessler/node-regedit",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ironSource/node-regedit"
+    "url": "https://github.com/kessler/node-regedit"
   },
   "bugs": {
-    "url": "https://github.com/ironSource/node-regedit/issues"
+    "url": "https://github.com/kessler/node-regedit/issues"
   },
   "keywords": [
     "windows",

@@ -1,7 +1,7 @@
-# ANNOUCEMENT: repository changing ownership
-On the 8th of Feb 2024 this repository will change ownership and move to the personal account of it's maintainer, [Yaniv Kessler](https://github.com/kessler)
+# ANNOUCEMENT: repository changed ownership
+This repository will changed ownership to the personal account of it's maintainer, [Yaniv Kessler](https://github.com/kessler)
 
-Ownership change will also occur on the npm registry to [Yaniv Kessler](https://www.npmjs.com/~kessler)
+Also on the npm registry to [Yaniv Kessler](https://www.npmjs.com/~kessler)
 
 # regedit
 Read, Write, List and do all sorts of funky stuff to the windows registry using node.js and windows script host.
@@ -48,7 +48,7 @@ When launching a 32bit application in 64bit environment, some of your paths will
 Further reading [here](https://msdn.microsoft.com/en-us/library/windows/desktop/ms724072%28v=vs.85%29.aspx)
 
 #### A note about Electron
-This software uses Windows Script Host to read and write to the registry. For that purpose, it will execute [`.wsf`](https://github.com/ironSource/node-regedit/tree/master/vbs) files. When packaging the app's dependencies with ASAR, `node-regedit` will not be able to access the windows script files, because they are bundled in a single ASAR file. Therefore it is necessary to store the `.wsf` files elsewhere, outside of the packaged asar file. You can set your custom location for the files with `setExternalVBSLocation(location)`:
+This software uses Windows Script Host to read and write to the registry. For that purpose, it will execute [`.wsf`](https://github.com/kessler/node-regedit/tree/master/vbs) files. When packaging the app's dependencies with ASAR, `node-regedit` will not be able to access the windows script files, because they are bundled in a single ASAR file. Therefore it is necessary to store the `.wsf` files elsewhere, outside of the packaged asar file. You can set your custom location for the files with `setExternalVBSLocation(location)`:
 
 #### callbacks and promise based APIs
 regedit was originally written using callbacks, but a promise based API was added later:
@@ -65,7 +65,7 @@ const promisifiedRegedit = require('regedit').promisified
 const vbsDirectory = path.join(path.dirname(electron.remote.app.getPath('exe')), './resources/my-location');
 regedit.setExternalVBSLocation(vbsDirectory);
 ```
-Also, take a look at [#60](https://github.com/ironSource/node-regedit/issues/60)
+Also, take a look at [#60](https://github.com/kessler/node-regedit/issues/60)
 
 # API
 Every command executes a sub process that runs vbscript code. To boost efficiency, every command supports batching.
@@ -193,7 +193,7 @@ streaming interface, see *regedit.list([String|Array])*
 Lists the values of one or more _value keys_ (or paths as I like to call them) without expanding any embedded environment variables.
 Specify an array instead of a string to query multiple keys in the same run.
 
-Read issue [#40](https://github.com/ironSource/node-regedit/issues/40) on why and when this is needed.
+Read issue [#40](https://github.com/kessler/node-regedit/issues/40) on why and when this is needed.
 
 Unlike the rest of this project, which is based on StdRegServ, this API (added on May 2022) uses a wshell object RegRead method. Although it's properly tested, please report any issues asap.
 
