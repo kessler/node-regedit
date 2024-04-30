@@ -50,7 +50,15 @@ Further reading [here](https://msdn.microsoft.com/en-us/library/windows/desktop/
 #### A note about Electron
 This software uses Windows Script Host to read and write to the registry. For that purpose, it will execute [`.wsf`](https://github.com/kessler/node-regedit/tree/master/vbs) files. When packaging the app's dependencies with ASAR, `node-regedit` will not be able to access the windows script files, because they are bundled in a single ASAR file. Therefore it is necessary to store the `.wsf` files elsewhere, outside of the packaged asar file. You can set your custom location for the files with `setExternalVBSLocation(location)`:
 
-#### callbacks and promise based APIs
+```js
+// Assuming the files lie in <app>/resources/my-location
+const vbsDirectory = path.join(path.dirname(electron.remote.app.getPath('exe')), './resources/my-location');
+regedit.setExternalVBSLocation(vbsDirectory);
+```
+
+Also, take a look at [#60](https://github.com/kessler/node-regedit/issues/60)
+
+#### Promise based API
 regedit was originally written using callbacks, but a promise based API was added later:
 
 ```js
@@ -59,13 +67,6 @@ const regedit = require('regedit')
 // promise api
 const promisifiedRegedit = require('regedit').promisified
 ```
-
-```js
-// Assuming the files lie in <app>/resources/my-location
-const vbsDirectory = path.join(path.dirname(electron.remote.app.getPath('exe')), './resources/my-location');
-regedit.setExternalVBSLocation(vbsDirectory);
-```
-Also, take a look at [#60](https://github.com/kessler/node-regedit/issues/60)
 
 # API
 Every command executes a sub process that runs vbscript code. To boost efficiency, every command supports batching.
