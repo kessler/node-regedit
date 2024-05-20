@@ -1,8 +1,3 @@
-# ANNOUCEMENT: repository changed ownership
-This repository will changed ownership to the personal account of it's maintainer, [Yaniv Kessler](https://github.com/kessler)
-
-Also on the npm registry to [Yaniv Kessler](https://www.npmjs.com/~kessler)
-
 # regedit
 Read, Write, List and do all sorts of funky stuff to the windows registry using node.js and windows script host.
 
