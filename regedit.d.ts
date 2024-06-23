@@ -25,7 +25,7 @@ export interface REG_MULTI_SZ_Value {
 
 export interface REG_BINARY_Value {
     value: number[];
-    type: "REG_SZ";
+    type: "REG_BINARY";
 }
 
 export interface REG_DEFAULT_Value {
