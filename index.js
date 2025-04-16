@@ -1,5 +1,4 @@
 const fs = require('fs')
-const util = require('util')
 const childProcess = require('child_process')
 const path = require('path')
 const debug = require('debug')('regedit')
@@ -151,13 +150,13 @@ function renderValueByType(value, type) {
 			return value
 
 		case 'REG_BINARY':
-			if (!util.isArray(value)) {
+			if (!Array.isArray(value)) {
 				throw new Error('invalid value type ' + typeof(value) + ' for registry type REG_BINARY, please use an array of numbers')
 			}
 			return value.join(',')
 
 		case 'REG_MULTI_SZ':
-			if (!util.isArray(value)) {
+			if (!Array.isArray(value)) {
 				throw new Error('invalid value type ' + typeof(value) + ' for registry type REG_BINARY, please use an array of strings')
 			}
 			return value.join(',')
@@ -192,7 +191,7 @@ function toCommandArgs(cmd, arch, keys) {
 	let result = baseCommand(cmd, arch)
 	if (typeof keys === 'string') {
 		result.push(keys)
-	} else if (util.isArray(keys)) {
+	} else if (Array.isArray(keys)) {
 		result = result.concat(keys)
 	} else {
 		debug('creating command without using keys %s', keys ? keys : '')
