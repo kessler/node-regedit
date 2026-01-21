@@ -59,17 +59,30 @@ export const OS_ARCH_32BIT = "32";
 export const OS_ARCH_64BIT = "64";
 
 type Architecture = (typeof OS_ARCH_AGNOSTIC | typeof OS_ARCH_SPECIFIC | typeof OS_ARCH_32BIT | typeof OS_ARCH_64BIT);
-type ErrResCallback<T extends readonly string[]> = (err: Error | undefined, res: RegistryItemCollection<T>) => void;
+type ErrResCallback<T> = (err: Error | undefined, res: T) => void;
 
-export function list<K extends string>(keys: readonly K[], callback: ErrResCallback<typeof keys>): void;
-export function list<K extends string>(keys: readonly K[], architecture: Architecture, callback?: ErrResCallback<typeof keys>): void;
+export function list<K extends string>(keys: readonly K[], callback: ErrResCallback<RegistryItemCollection<typeof keys>>): void;
+export function list<K extends string>(keys: readonly K[], architecture: Architecture, callback?: ErrResCallback<RegistryItemCollection<typeof keys>>): void;
+
+interface Stream<T> {
+    on(event: "data", callback: (entry: T) => void): Stream<T>;
+    on(event: "finish", callback: () => void): Stream<T>;
+}
+
+interface RegistryEntry<T> {
+    key: T;
+    data: RegistryItem;
+}
+
+export function list<K extends string>(keys: readonly K[]): Stream<RegistryEntry<typeof keys[number]>>;
+export function list<K extends string>(keys: readonly K[], architecture: Architecture): Stream<RegistryEntry<typeof keys[number]>>;
 
 export function setExternalVBSLocation(newLocation: string): string;
 
 interface ErrorWithCode extends Error {
     code: number;
     description: string;
- }
+}
 
 type ErrCallback = (err: ErrorWithCode | undefined) => void;
 
@@ -82,10 +95,27 @@ export function deleteKey(keys: readonly string[], architecture: Architecture, c
 export function putValue(map: RegistryItemPutCollection, callback: ErrCallback): void;
 export function putValue(map: RegistryItemPutCollection, architecture: Architecture, callback?: ErrCallback): void;
 
+interface UnexpandedValue<T> {
+    path: T;
+    exists: boolean;
+    value: string;
+}
+
+export function listUnexpandedValues<K extends string>(key: K, callback: ErrResCallback<UnexpandedValue<typeof key>[]>): void;
+export function listUnexpandedValues<K extends string>(key: K): Stream<UnexpandedValue<typeof key>>;
+export function listUnexpandedValues<K extends string>(keys: K[], callback: ErrResCallback<UnexpandedValue<typeof keys[number]>[]>): void;
+export function listUnexpandedValues<K extends string>(keys: K[]): Stream<UnexpandedValue<typeof keys[number]>>;
+export function listUnexpandedValues<K extends string>(key: K, architecture: Architecture, callback: ErrResCallback<UnexpandedValue<typeof key>[]>): void;
+export function listUnexpandedValues<K extends string>(key: K, architecture: Architecture): Stream<UnexpandedValue<typeof key>>;
+export function listUnexpandedValues<K extends string>(keys: K[], architecture: Architecture, callback: ErrResCallback<UnexpandedValue<typeof keys[number]>[]>): void;
+export function listUnexpandedValues<K extends string>(keys: K[], architecture: Architecture): Stream<UnexpandedValue<typeof keys[number]>>;
+
 export namespace arch {
-    export function list<K extends string>(keys: readonly K[], callback: ErrResCallback<typeof keys>): void;
-    export function list32<K extends string>(keys: readonly K[], callback: ErrResCallback<typeof keys>): void;
-    export function list64<K extends string>(keys: readonly K[], callback: ErrResCallback<typeof keys>): void;
+    export function list<K extends string>(keys: readonly K[], callback: ErrResCallback<RegistryItemCollection<typeof keys>>): void;
+    export function list32<K extends string>(keys: readonly K[], callback: ErrResCallback<RegistryItemCollection<typeof keys>>): void;
+    export function list64<K extends string>(keys: readonly K[], callback: ErrResCallback<RegistryItemCollection<typeof keys>>): void;
+    export function list32<K extends string>(keys: readonly K[]): Stream<RegistryEntry<typeof keys[number]>>;
+    export function list64<K extends string>(keys: readonly K[]): Stream<RegistryEntry<typeof keys[number]>>;
     export function createKey(keys: readonly string[], callback: ErrCallback): void;
     export function createKey32(keys: readonly string[], callback: ErrCallback): void;
     export function createKey64(keys: readonly string[], callback: ErrCallback): void;
@@ -95,6 +125,15 @@ export namespace arch {
     export function putValue(map: RegistryItemPutCollection, callback: ErrCallback): void;
     export function putValue32(map: RegistryItemPutCollection, callback: ErrCallback): void;
     export function putValue64(map: RegistryItemPutCollection, callback: ErrCallback): void;
+
+    export function listUnexpandedValues32<K extends string>(key: K, callback: ErrResCallback<UnexpandedValue<typeof key>[]>): void;
+    export function listUnexpandedValues64<K extends string>(key: K, callback: ErrResCallback<UnexpandedValue<typeof key>[]>): void;
+    export function listUnexpandedValues32<K extends string>(key: K): Stream<UnexpandedValue<typeof key>>;
+    export function listUnexpandedValues64<K extends string>(key: K): Stream<UnexpandedValue<typeof key>>;
+    export function listUnexpandedValues32<K extends string>(keys: K[], callback: ErrResCallback<UnexpandedValue<typeof keys[number]>[]>): void;
+    export function listUnexpandedValues64<K extends string>(keys: K[], callback: ErrResCallback<UnexpandedValue<typeof keys[number]>[]>): void;
+    export function listUnexpandedValues32<K extends string>(keys: K[]): Stream<UnexpandedValue<typeof keys[number]>>;
+    export function listUnexpandedValues64<K extends string>(keys: K[]): Stream<UnexpandedValue<typeof keys[number]>>;
 }
 
 export namespace promisified {
@@ -106,6 +145,11 @@ export namespace promisified {
     export function deleteKey(keys: readonly string[], architecture: Architecture): Promise<void>;
     export function putValue(map: RegistryItemPutCollection): Promise<void>;
     export function putValue(map: RegistryItemPutCollection, architecture: Architecture): Promise<void>;
+
+    export function listUnexpandedValues<K extends string>(key: K): Promise<UnexpandedValue<typeof key>[]>;
+    export function listUnexpandedValues<K extends string>(keys: K[]): Promise<UnexpandedValue<typeof keys[number]>[]>;
+    export function listUnexpandedValues<K extends string>(key: K, architecture: Architecture): Promise<UnexpandedValue<typeof key>[]>;
+    export function listUnexpandedValues<K extends string>(keys: K[], architecture: Architecture): Promise<UnexpandedValue<typeof keys[number]>[]>;
 
     export namespace arch {
         export function list<K extends string>(keys: readonly K[]): Promise<RegistryItemCollection<typeof keys>>;
@@ -120,5 +164,10 @@ export namespace promisified {
         export function putValue(map: RegistryItemPutCollection): Promise<void>;
         export function putValue32(map: RegistryItemPutCollection): Promise<void>;
         export function putValue64(map: RegistryItemPutCollection): Promise<void>;
+
+        export function listUnexpandedValues32<K extends string>(key: K): Promise<UnexpandedValue<typeof key>[]>;
+        export function listUnexpandedValues64<K extends string>(key: K): Promise<UnexpandedValue<typeof key>[]>;
+        export function listUnexpandedValues32<K extends string>(keys: K[]): Promise<UnexpandedValue<typeof keys>[]>;
+        export function listUnexpandedValues64<K extends string>(keys: K[]): Promise<UnexpandedValue<typeof keys>[]>;
     }
 }
